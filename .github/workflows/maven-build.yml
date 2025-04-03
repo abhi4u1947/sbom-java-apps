@@ -27,13 +27,13 @@ jobs:
       if: matrix.project != 'native'
       uses: actions/setup-java@v3
       with:
-        java-version: 24'
+        java-version: 24
         distribution: 'corretto'
 
     - uses: graalvm/setup-graalvm@v1
       if: matrix.project == 'native'
       with:
-        java-version: 24'
+        java-version: 24
         distribution: 'graalvm'
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
