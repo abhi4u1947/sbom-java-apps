@@ -32,18 +32,23 @@ jobs:
     - name: Build JAR with Gradle
       if: matrix.project != 'native'
       run: ./gradlew -p ${{ matrix.project }} build
+      working-directory: ./gradle-parent
 
     - name: Build Native Executable (only for native project)
       if: matrix.project == 'native'
       run: ./gradlew -p ${{ matrix.project }} nativeCompile
+      working-directory: ./gradle-parent
 
     - name: Generate SBOM
       run: ./gradlew -p ${{ matrix.project }} cyclonedxBom
+      working-directory: ./gradle-parent
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
       run: ./gradlew -p ${{ matrix.project }} imageBuild -Dquarkus.container-image.build=true
+      working-directory: ./gradle-parent
 
     - name: Build Container Image for Spring Boot
       if: matrix.project != 'quarkus'
       run: ./gradlew -p ${{ matrix.project }} bootBuildImage
+      working-directory: ./gradle-parent

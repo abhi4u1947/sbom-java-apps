@@ -32,18 +32,23 @@ jobs:
     - name: Build JAR with Maven
       if: matrix.project != 'native'
       run: ./mvnw -pl ${{ matrix.project }} package
+      working-directory: ./maven-parent
 
     - name: Build Native Executable (only for native project)
       if: matrix.project == 'native'
       run: ./mvnw -pl ${{ matrix.project }} -Pnative native:compile
+      working-directory: ./maven-parent
 
     - name: Generate SBOM
       run: ./mvnw -pl ${{ matrix.project }} cyclonedx:makeAggregateBom
+      working-directory: ./maven-parent
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
       run: ./mvnw -pl ${{ matrix.project }} package -Dquarkus.container-image.build=true
+      working-directory: ./maven-parent
 
     - name: Build Container Image for Spring Boot
       if: matrix.project != 'quarkus'
       run: ./mvnw -pl ${{ matrix.project }} spring-boot:build-image
+      working-directory: ./maven-parent
