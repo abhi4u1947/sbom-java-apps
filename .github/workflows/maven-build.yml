@@ -34,7 +34,7 @@ jobs:
       if: matrix.project == 'native'
       with:
         java-version: '23'
-        distribution: 'graalvm-community'
+        distribution: 'graalvm'
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: GraalVM image validation
