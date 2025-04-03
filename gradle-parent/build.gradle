@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.nc'
+version = '1.0-SNAPSHOT'
+//noinspection GroovyUnusedAssignment
+archivesBaseName = 'gradle-parent' // This sets the artifactId
+
+subprojects {
+    apply plugin: 'java'
+
+    group = 'com.nc'
+    version = '1.0-SNAPSHOT'
+}

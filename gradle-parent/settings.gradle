@@ -1,0 +1,7 @@
+include 'java-sbom-cdx-gradle'
+include 'java-sbom-cdx-gradle-native'
+include 'java-sbom-cdx-gradle-quarkus'
+
+project(':java-sbom-cdx-gradle').projectDir = file('normal')
+project(':java-sbom-cdx-gradle-native').projectDir = file('native')
+project(':java-sbom-cdx-gradle-quarkus').projectDir = file('quarkus')
