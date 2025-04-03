@@ -1,0 +1,49 @@
+name: Maven Build and SBOM
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        project:
+          - native
+          - normal
+          - quarkus
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 23
+      uses: actions/setup-java@v3
+      with:
+        java-version: '23'
+        distribution: 'adopt'
+
+    - name: Build JAR with Maven
+      if: matrix.project != 'native'
+      run: ./mvnw -pl ${{ matrix.project }} package
+
+    - name: Build Native Executable (only for native project)
+      if: matrix.project == 'native'
+      run: ./mvnw -pl ${{ matrix.project }} -Pnative native:compile
+
+    - name: Generate SBOM
+      run: ./mvnw -pl ${{ matrix.project }} cyclonedx:makeAggregateBom
+
+    - name: Build Container Image for Quarkus
+      if: matrix.project == 'quarkus'
+      run: ./mvnw -pl ${{ matrix.project }} package -Dquarkus.container-image.build=true
+
+    - name: Build Container Image for Spring Boot
+      if: matrix.project != 'quarkus'
+      run: ./mvnw -pl ${{ matrix.project }} spring-boot:build-image
