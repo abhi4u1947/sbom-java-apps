@@ -7,7 +7,7 @@
     <name>maven</name>
     <description>maven</description>
     <properties>
-        <java.version>23</java.version>
+        <java.version>24</java.version>
         <quarkus.platform.version>3.21.0</quarkus.platform.version>
     </properties>
     <dependencyManagement>
