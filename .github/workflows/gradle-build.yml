@@ -29,6 +29,10 @@ jobs:
         java-version: '23'
         distribution: 'adopt'
 
+    - name: Grant execute permission for gradlew
+      run: chmod +x ./gradlew
+      working-directory: ./gradle-parent
+
     - name: Build JAR with Gradle
       if: matrix.project != 'native'
       run: ./gradlew -p ${{ matrix.project }} build

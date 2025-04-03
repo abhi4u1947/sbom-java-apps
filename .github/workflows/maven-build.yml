@@ -29,6 +29,10 @@ jobs:
         java-version: '23'
         distribution: 'adopt'
 
+    - name: Grant execute permission for maven
+      run: chmod +x ./mvnw
+      working-directory: ./maven-parent
+
     - name: Build JAR with Maven
       if: matrix.project != 'native'
       run: ./mvnw -pl ${{ matrix.project }} package
