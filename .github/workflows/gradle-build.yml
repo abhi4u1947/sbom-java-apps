@@ -65,7 +65,7 @@ jobs:
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
-      run: ./gradlew -p ${{ matrix.project }} imageBuild -Dquarkus.container-image.build=true -Dquarkus.buildpack.log-level=debug
+      run: ./gradlew -p ${{ matrix.project }} imageBuild -Dquarkus.buildpack.jvm-builder-image=paketobuildpacks/builder:base -Dquarkus.container-image.build=true -Dquarkus.buildpack.builder=paketobuildpacks/builder:base -Dquarkus.buildpack.log-level=debug
       working-directory: ./gradle-parent
 
     - name: Build Container Image for Spring Boot
