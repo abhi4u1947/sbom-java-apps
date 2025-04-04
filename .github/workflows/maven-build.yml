@@ -65,7 +65,7 @@ jobs:
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
-      run: ./mvnw -X -pl ${{ matrix.project }} package -Dquarkus.container-image.build=true
+      run: ./mvnw -pl ${{ matrix.project }} package -Dquarkus.container-image.build=true -Dquarkus.buildpack.log-level=debug
       working-directory: ./maven-parent
 
     - name: Build Container Image for Spring Boot
