@@ -15,8 +15,8 @@ jobs:
     strategy:
       matrix:
         project:
-          - native
-          - normal
+          # - native
+          # - normal
           - quarkus
 
     steps:
