@@ -13,7 +13,7 @@ archivesBaseName = 'java-sbom-cdx-gradle-native' // This sets the artifactId
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(24)
+        languageVersion = JavaLanguageVersion.of(23)
     }
 }
 

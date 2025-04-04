@@ -14,7 +14,7 @@
     <name>maven</name>
     <description>maven</description>
     <properties>
-        <java.version>24</java.version>
+        <java.version>23</java.version>
     </properties>
     <dependencies>
         <dependency>
