@@ -99,7 +99,7 @@ jobs:
           -Dquarkus.container-image.username=${GHCR_USERNAME} \
           -Dquarkus.container-image.password=${GHCR_TOKEN} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
-          -Dquarkus.buildpack.log-level=debug
+          -Dquarkus.buildpack.log-level=debug \
           -Dquarkus.container-image.buildpacks-env.BP_JVM_TYPE=JVM \
           -DskipTests
       working-directory: ./maven-parent/${{ matrix.project }}
