@@ -42,7 +42,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GHCR_TOKEN }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up JDK 23
       if: matrix.project != 'native'
@@ -93,7 +93,7 @@ jobs:
       if: matrix.project == 'quarkus'
       env:
         GHCR_USERNAME: ${{ github.actor }}
-        GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         ../gradlew imageBuild \
           -Dquarkus.buildpack.log-level=debug \
