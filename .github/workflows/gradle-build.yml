@@ -1,0 +1,101 @@
+name: Gradle Build and SBOM
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+      contents: read
+
+    env:
+      GHCR_USERNAME: ${{ github.actor }}
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      IMAGE_PUSH: false # Change to true if you want to push images
+
+    strategy:
+      matrix:
+        project:
+          # - native
+          # - normal
+          - quarkus
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 23
+      if: matrix.project != 'native'
+      uses: actions/setup-java@v3
+      with:
+        java-version: 23
+        distribution: 'corretto'
+
+    - name: Setup Buildpacks CLI
+      uses: buildpacks/github-actions/setup-pack@v5.3.0
+      with:
+        pack-version: 0.33.2
+
+    - name: Verify Docker and Pack
+      run: |
+        docker --version
+        pack --version
+
+    - uses: graalvm/setup-graalvm@v1
+      if: matrix.project == 'native'
+      with:
+        java-version: 23
+        distribution: 'graalvm'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: GraalVM image validation
+      if: matrix.project == 'native'
+      run: |
+        echo "GRAALVM_HOME: $GRAALVM_HOME"
+        echo "JAVA_HOME: $JAVA_HOME"
+        java --version
+        native-image --version
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x ./gradlew
+      working-directory: ./gradle-parent
+
+    - name: Build JAR with Gradle
+      if: matrix.project != 'native'
+      run: ./gradlew -p ${{ matrix.project }} build
+      working-directory: ./gradle-parent
+
+    - name: Build Native Executable (only for native project)
+      if: matrix.project == 'native'
+      run: ./gradlew -p ${{ matrix.project }} nativeCompile
+      working-directory: ./gradle-parent
+
+    - name: Generate SBOM
+      run: ./gradlew -p ${{ matrix.project }} cyclonedxBom
+      working-directory: ./gradle-parent
+
+    - name: Build Container Image for Quarkus
+      if: matrix.project == 'quarkus'
+      run: |
+        ./gradlew -p ${{ matrix.project }} imageBuild \
+          -Dquarkus.container-image.build=true \
+          -Dquarkus.container-image.push=${IMAGE_PUSH} \
+          -Dquarkus.container-image.registry=ghcr.io \
+          -Dquarkus.container-image.username=${GHCR_USERNAME} \
+          -Dquarkus.container-image.password=${GHCR_TOKEN} \
+          -Dquarkus.container-image.tag=${{ github.sha }} \
+          -Dquarkus.buildpack.log-level=debug
+      working-directory: ./gradle-parent
+
+    - name: Build Container Image for Spring Boot
+      if: matrix.project != 'quarkus'
+      run: ./gradlew -p ${{ matrix.project }} bootBuildImage
+      working-directory: ./gradle-parent
