@@ -78,7 +78,7 @@
 #   accessed directly. (example: "foo.example.com,bar.example.com")
 #
 ###
-FROM eclipse-temurin:23-jre
+FROM bellsoft/liberica-openjdk-debian:23.0.2
 
 ENV LANGUAGE='en_US:en'
 

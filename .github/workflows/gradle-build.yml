@@ -89,19 +89,6 @@ jobs:
       run: ../gradlew cyclonedxBom
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
 
-    - name: Pull required run image
-      run: docker pull docker.io/paketobuildpacks/bellsoft-liberica:11.1.0
-      if: matrix.project == 'quarkus'
-      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
-
-    - name: Inspect Buildpack Run Image Metadata
-      if: matrix.project == 'quarkus'
-      run: |
-        echo "Inspecting image for buildpack metadata..."
-        docker inspect docker.io/paketobuildpacks/bellsoft-liberica:11.1.0 \
-          --format='{{ json .Config.Labels }}' | jq .
-      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
-
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
       env:
@@ -120,7 +107,7 @@ jobs:
           -Dquarkus.container-image.username=${GHCR_USERNAME} \
           -Dquarkus.container-image.password=${GHCR_TOKEN} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
-          -Dquarkus.buildpack.jvm-builder-image=docker.io/paketobuildpacks/bellsoft-liberica:11.1.0 \
+          -Dquarkus.buildpack.jvm-builder-image=docker.io/paketobuildpacks/builder-jammy-java-tiny::0.0.20 \
           -Dquarkus.buildpack.run-image=docker.io/eclipse-temurin:23-jre \
           -Dquarkus.buildpack.builder-env.BP_JVM_VERSION=23 \
           -Dquarkus.buildpack.base-registry-username=${DOCKERHUB_USERNAME} \
