@@ -22,9 +22,9 @@ jobs:
     strategy:
       matrix:
         project:
-          # - native
           - normal
           - quarkus
+          - native
 
     steps:
     - name: Checkout code
@@ -109,5 +109,7 @@ jobs:
 
     - name: Build Container Image for Spring Boot
       if: matrix.project != 'quarkus'
-      run: ../mvnw spring-boot:build-image
+      run: |
+        ../mvnw spring-boot:build-image \
+          -DskipTests \
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
