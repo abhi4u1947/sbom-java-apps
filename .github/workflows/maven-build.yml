@@ -98,21 +98,15 @@ jobs:
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
-      env:
-        IMAGE_PUSH: ${{ env.IMAGE_PUSH }}
-        GHCR_USERNAME: ${{ github.actor }}
-        GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       run: |
         ../mvnw quarkus:image-build \
-          -Dquarkus.buildpack.log-level=debug \
           -Dquarkus.container-image.build=true \
           -Dquarkus.container-image.builder=docker \
-          -Dquarkus.container-image.push=${IMAGE_PUSH} \
+          -Dquarkus.container-image.push=${{ env.IMAGE_PUSH }} \
           -Dquarkus.container-image.registry=ghcr.io \
-          -Dquarkus.container-image.username=${GHCR_USERNAME} \
-          -Dquarkus.container-image.password=${GHCR_TOKEN} \
+          -Dquarkus.container-image.username=${{ github.actor }} \
+          -Dquarkus.container-image.password=${{ secrets.GHCR_TOKEN }} \
+          -Dquarkus.container-image.group=${{ github.repository_owner }} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
           -Dquarkus.docker.dockerfile-jvm-path=${{ github.workspace }}/maven-parent/${{ matrix.project }}/src/main/docker/Dockerfile.jvm
           -DskipTests
