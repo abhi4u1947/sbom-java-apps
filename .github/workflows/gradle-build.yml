@@ -92,8 +92,11 @@ jobs:
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
       env:
+        IMAGE_PUSH: ${{ env.IMAGE_PUSH }}
         GHCR_USERNAME: ${{ github.actor }}
-        GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       run: |
         ../gradlew imageBuild \
           -Dquarkus.buildpack.log-level=debug \
