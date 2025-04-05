@@ -65,32 +65,32 @@ jobs:
         native-image --version
 
     - name: Grant execute permission for maven
-      run: chmod +x ./maven-parent/mvnw
-      working-directory: ./maven-parent/${{ matrix.project }}
+      run: chmod +x ${{ github.workspace }}/maven-parent/mvnw
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
     - name: Build JAR with Maven
       if: matrix.project != 'native'
-      run: ./maven-parent/mvnw ${{ matrix.project }} package
-      working-directory: ./maven-parent/${{ matrix.project }}
+      run: ${{ github.workspace }}/maven-parent/mvnw ${{ matrix.project }} package
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
     - name: Build Native Executable (only for native project)
       if: matrix.project == 'native'
-      run: ./maven-parent/mvnw ${{ matrix.project }} -Pnative native:compile
-      working-directory: ./maven-parent/${{ matrix.project }}
+      run: ${{ github.workspace }}/maven-parent/mvnw ${{ matrix.project }} -Pnative native:compile
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
     - name: Generate SBOM
-      run: ./maven-parent/mvnw ${{ matrix.project }} cyclonedx:makeAggregateBom
-      working-directory: ./maven-parent/${{ matrix.project }}
+      run: ${{ github.workspace }}/maven-parent/mvnw ${{ matrix.project }} cyclonedx:makeAggregateBom
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
     - name: Pull required run image
       run: docker pull paketobuildpacks/run:base-cnb
       if: matrix.project == 'quarkus'
-      working-directory: ./maven-parent/${{ matrix.project }}
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
       run: |
-        ./maven-parent/mvnw ${{ matrix.project }} quarkus:image-build \
+        ${{ github.workspace }}/maven-parent/mvnw ${{ matrix.project }} quarkus:image-build \
           -Dquarkus.container-image.build=true \
           -Dquarkus.container-image.builder=buildpack \
           -Dquarkus.container-image.builder=paketobuildpacks/builder:base \
@@ -102,9 +102,9 @@ jobs:
           -Dquarkus.buildpack.log-level=debug \
           -Dquarkus.container-image.buildpacks-env.BP_JVM_TYPE=JVM \
           -DskipTests
-      working-directory: ./maven-parent/${{ matrix.project }}
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
     - name: Build Container Image for Spring Boot
       if: matrix.project != 'quarkus'
-      run: ./maven-parent/mvnw ${{ matrix.project }} spring-boot:build-image
-      working-directory: ./maven-parent/${{ matrix.project }}
+      run: ${{ github.workspace }}/maven-parent/mvnw ${{ matrix.project }} spring-boot:build-image
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
