@@ -32,6 +32,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Login to Docker Hub (for pulling base images)
+      uses: docker/login-action@v3
+      with:
+        registry: docker.io
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Login to GitHub Container Registry (for pushing final image)
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ GHCR_USERNAME }}
+        password: ${{ GHCR_TOKEN }}
+
     - name: Set up JDK 23
       if: matrix.project != 'native'
       uses: actions/setup-java@v3
@@ -43,11 +57,6 @@ jobs:
       uses: buildpacks/github-actions/setup-pack@v5.3.0
       with:
         pack-version: 0.33.2
-
-    - name: Verify Docker and Pack
-      run: |
-        docker --version
-        pack --version
 
     - uses: graalvm/setup-graalvm@v1
       if: matrix.project == 'native'
@@ -86,17 +95,19 @@ jobs:
       if: matrix.project == 'quarkus'
       run: |
         ../gradlew imageBuild \
+          -Dquarkus.buildpack.log-level=debug \
           -Dquarkus.container-image.build=true \
-          -Dquarkus.buildpack.jvm-builder-image=paketobuildpacks/builder-jammy-base:latest \
           -Dquarkus.container-image.builder=buildpack \
           -Dquarkus.container-image.push=${IMAGE_PUSH} \
           -Dquarkus.container-image.registry=ghcr.io \
           -Dquarkus.container-image.username=${GHCR_USERNAME} \
           -Dquarkus.container-image.password=${GHCR_TOKEN} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
-          -Dquarkus.buildpack.run-image=eclipse-temurin:23-jre \
+          -Dquarkus.buildpack.jvm-builder-image=docker.io/paketobuildpacks/builder-jammy-base:latest \
+          -Dquarkus.buildpack.run-image=docker.io/eclipse-temurin:23-jre \
           -Dquarkus.buildpack.builder-env.BP_JVM_VERSION=23 \
-          -Dquarkus.buildpack.environment.BP_JVM_VERSION=23 \
+          -Dquarkus.buildpack.base-registry-username=${DOCKERHUB_USERNAME} \
+          -Dquarkus.buildpack.base-registry-password=${DOCKERHUB_TOKEN} \
           -Dquarkus.buildpack.log-level=debug \
           -DskipTests
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
