@@ -90,8 +90,16 @@ jobs:
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
     - name: Pull required run image
-      run: docker pull paketobuildpacks/run:base-cnb
+      run: docker pull docker.io/paketobuildpacks/bellsoft-liberica:11.1.0
       if: matrix.project == 'quarkus'
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
+
+    - name: Inspect Buildpack Run Image Metadata
+      if: matrix.project == 'quarkus'
+      run: |
+        echo "Inspecting image for buildpack metadata..."
+        docker inspect docker.io/paketobuildpacks/bellsoft-liberica:11.1.0 \
+          --format='{{ json .Config.Labels }}' | jq .
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
     - name: Build Container Image for Quarkus
