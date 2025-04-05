@@ -92,6 +92,7 @@ jobs:
       run: |
         ../mvnw quarkus:image-build \
           -Dquarkus.container-image.build=true \
+          -Dquarkus.buildpack.jvm-builder-image=paketobuildpacks/builder-jammy-base:latest \
           -Dquarkus.container-image.builder=buildpack \
           -Dquarkus.container-image.push=${IMAGE_PUSH} \
           -Dquarkus.container-image.registry=ghcr.io \
@@ -99,6 +100,8 @@ jobs:
           -Dquarkus.container-image.password=${GHCR_TOKEN} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
           -Dquarkus.buildpack.run-image=eclipse-temurin:23-jre \
+          -Dquarkus.buildpack.builder-env.BP_JVM_VERSION=23 \
+          -Dquarkus.buildpack.environment.BP_JVM_VERSION=23 \
           -Dquarkus.buildpack.log-level=debug \
           -DskipTests
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
