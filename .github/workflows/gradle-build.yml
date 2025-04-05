@@ -12,6 +12,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      packages: write
+      contents: read
+
+    env:
+      GHCR_USERNAME: ${{ github.actor }}
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      IMAGE_PUSH: false # Change to true if you want to push images
+
     strategy:
       matrix:
         project:
@@ -65,7 +74,14 @@ jobs:
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
-      run: ./gradlew -p ${{ matrix.project }} imageBuild -Dquarkus.buildpack.jvm-builder-image=paketobuildpacks/builder:base -Dquarkus.container-image.build=true -Dquarkus.buildpack.builder=paketobuildpacks/builder:base -Dquarkus.buildpack.log-level=debug
+      run: ./gradlew -p ${{ matrix.project }} imageBuild \
+        -Dquarkus.container-image.build=true \
+        -Dquarkus.container-image.push=${IMAGE_PUSH} \
+        -Dquarkus.container-image.registry=ghcr.io \
+        -Dquarkus.container-image.username=${GHCR_USERNAME} \
+        -Dquarkus.container-image.password=${GHCR_TOKEN} \
+        -Dquarkus.container-image.tag=${{ github.sha }} \
+        -Dquarkus.buildpack.log-level=debug
       working-directory: ./gradle-parent
 
     - name: Build Container Image for Spring Boot
