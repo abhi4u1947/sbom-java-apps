@@ -107,7 +107,7 @@ jobs:
           -Dquarkus.container-image.username=${GHCR_USERNAME} \
           -Dquarkus.container-image.password=${GHCR_TOKEN} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
-          -Dquarkus.buildpack.jvm-builder-image=docker.io/paketobuildpacks/builder-jammy-java-tiny::0.0.20 \
+          -Dquarkus.buildpack.jvm-builder-image=docker.io/paketobuildpacks/builder-jammy-java-tiny:0.0.20 \
           -Dquarkus.buildpack.run-image=docker.io/eclipse-temurin:23-jre \
           -Dquarkus.buildpack.builder-env.BP_JVM_VERSION=23 \
           -Dquarkus.buildpack.base-registry-username=${DOCKERHUB_USERNAME} \
