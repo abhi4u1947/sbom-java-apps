@@ -89,6 +89,13 @@ jobs:
       run: ../gradlew cyclonedxBom
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
 
+    - name: Show current workspace
+      run: |
+        echo "Workspace directory structure:"
+        sudo apt-get update && sudo apt-get install -y tree
+        tree -a -L 4
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
+
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
       env:
@@ -107,12 +114,7 @@ jobs:
           -Dquarkus.container-image.username=${GHCR_USERNAME} \
           -Dquarkus.container-image.password=${GHCR_TOKEN} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
-          -Dquarkus.buildpack.jvm-builder-image=docker.io/paketobuildpacks/builder-jammy-java-tiny:0.0.20 \
-          -Dquarkus.buildpack.run-image=docker.io/eclipse-temurin:23-jre \
-          -Dquarkus.buildpack.builder-env.BP_JVM_VERSION=23 \
-          -Dquarkus.buildpack.base-registry-username=${DOCKERHUB_USERNAME} \
-          -Dquarkus.buildpack.base-registry-password=${DOCKERHUB_TOKEN} \
-          -Dquarkus.buildpack.log-level=debug \
+          -Dquarkus.docker.dockerfile-jvm-path=${{ github.workspace }}/maven-parent/${{ matrix.project }}/src/main/docker/Dockerfile.jvm
           -DskipTests
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
 
