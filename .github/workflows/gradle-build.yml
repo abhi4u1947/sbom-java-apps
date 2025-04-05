@@ -65,27 +65,27 @@ jobs:
         native-image --version
 
     - name: Grant execute permission for gradlew
-      run: chmod +x ./gradlew
+      run: chmod +x ../gradlew
       working-directory: ./gradle-parent/${{ matrix.project }}
 
     - name: Build JAR with Gradle
       if: matrix.project != 'native'
-      run: ./gradlew -p ${{ matrix.project }} build
+      run: ../gradlew -p ${{ matrix.project }} build
       working-directory: ./gradle-parent/${{ matrix.project }}
 
     - name: Build Native Executable (only for native project)
       if: matrix.project == 'native'
-      run: ./gradlew -p ${{ matrix.project }} nativeCompile
+      run: ../gradlew -p ${{ matrix.project }} nativeCompile
       working-directory: ./gradle-parent/${{ matrix.project }}
 
     - name: Generate SBOM
-      run: ./gradlew -p ${{ matrix.project }} cyclonedxBom
+      run: ../gradlew -p ${{ matrix.project }} cyclonedxBom
       working-directory: ./gradle-parent/${{ matrix.project }}
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
       run: |
-        ./gradlew -p ${{ matrix.project }} imageBuild \
+        ../gradlew -p ${{ matrix.project }} imageBuild \
           -Dquarkus.container-image.builder=buildpack \
           -Dquarkus.container-image.builder=paketobuildpacks/builder:base \
           -Dquarkus.container-image.build=true \
@@ -101,5 +101,5 @@ jobs:
 
     - name: Build Container Image for Spring Boot
       if: matrix.project != 'quarkus'
-      run: ./gradlew -p ${{ matrix.project }} bootBuildImage
+      run: ../gradlew -p ${{ matrix.project }} bootBuildImage
       working-directory: ./gradle-parent/${{ matrix.project }}
