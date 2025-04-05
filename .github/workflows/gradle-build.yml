@@ -66,27 +66,28 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
-      working-directory: ./gradle-parent
+      working-directory: ./gradle-parent/${{ matrix.project }}
 
     - name: Build JAR with Gradle
       if: matrix.project != 'native'
       run: ./gradlew -p ${{ matrix.project }} build
-      working-directory: ./gradle-parent
+      working-directory: ./gradle-parent/${{ matrix.project }}
 
     - name: Build Native Executable (only for native project)
       if: matrix.project == 'native'
       run: ./gradlew -p ${{ matrix.project }} nativeCompile
-      working-directory: ./gradle-parent
+      working-directory: ./gradle-parent/${{ matrix.project }}
 
     - name: Generate SBOM
       run: ./gradlew -p ${{ matrix.project }} cyclonedxBom
-      working-directory: ./gradle-parent
+      working-directory: ./gradle-parent/${{ matrix.project }}
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
       run: |
         ./gradlew -p ${{ matrix.project }} imageBuild \
           -Dquarkus.container-image.builder=buildpack \
+          -Dquarkus.container-image.builder=paketobuildpacks/builder:base \
           -Dquarkus.container-image.build=true \
           -Dquarkus.container-image.push=${IMAGE_PUSH} \
           -Dquarkus.container-image.registry=ghcr.io \
@@ -94,9 +95,11 @@ jobs:
           -Dquarkus.container-image.password=${GHCR_TOKEN} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
           -Dquarkus.buildpack.log-level=debug
-      working-directory: ./gradle-parent
+          -Dquarkus.container-image.buildpacks-env.BP_JVM_TYPE=JVM \
+          -DskipTests
+      working-directory: ./gradle-parent/${{ matrix.project }}
 
     - name: Build Container Image for Spring Boot
       if: matrix.project != 'quarkus'
       run: ./gradlew -p ${{ matrix.project }} bootBuildImage
-      working-directory: ./gradle-parent
+      working-directory: ./gradle-parent/${{ matrix.project }}

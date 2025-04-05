@@ -66,21 +66,26 @@ jobs:
 
     - name: Grant execute permission for maven
       run: chmod +x ./mvnw
-      working-directory: ./maven-parent
+      working-directory: ./maven-parent/${{ matrix.project }}
 
     - name: Build JAR with Maven
       if: matrix.project != 'native'
       run: ./mvnw -pl ${{ matrix.project }} package
-      working-directory: ./maven-parent
+      working-directory: ./maven-parent/${{ matrix.project }}
 
     - name: Build Native Executable (only for native project)
       if: matrix.project == 'native'
       run: ./mvnw -pl ${{ matrix.project }} -Pnative native:compile
-      working-directory: ./maven-parent
+      working-directory: ./maven-parent/${{ matrix.project }}
 
     - name: Generate SBOM
       run: ./mvnw -pl ${{ matrix.project }} cyclonedx:makeAggregateBom
-      working-directory: ./maven-parent
+      working-directory: ./maven-parent/${{ matrix.project }}
+
+    - name: Pull required run image
+      run: docker pull paketobuildpacks/run:base-cnb
+      if: matrix.project == 'quarkus'
+      working-directory: ./maven-parent/${{ matrix.project }}
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
@@ -88,15 +93,18 @@ jobs:
         ./mvnw -pl ${{ matrix.project }} quarkus:image-build \
           -Dquarkus.container-image.build=true \
           -Dquarkus.container-image.builder=buildpack \
+          -Dquarkus.container-image.builder=paketobuildpacks/builder:base \
           -Dquarkus.container-image.push=${IMAGE_PUSH} \
           -Dquarkus.container-image.registry=ghcr.io \
           -Dquarkus.container-image.username=${GHCR_USERNAME} \
           -Dquarkus.container-image.password=${GHCR_TOKEN} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
           -Dquarkus.buildpack.log-level=debug
-      working-directory: ./maven-parent
+          -Dquarkus.container-image.buildpacks-env.BP_JVM_TYPE=JVM \
+          -DskipTests
+      working-directory: ./maven-parent/${{ matrix.project }}
 
     - name: Build Container Image for Spring Boot
       if: matrix.project != 'quarkus'
       run: ./mvnw -pl ${{ matrix.project }} spring-boot:build-image
-      working-directory: ./maven-parent
+      working-directory: ./maven-parent/${{ matrix.project }}
