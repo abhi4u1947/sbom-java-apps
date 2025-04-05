@@ -23,7 +23,7 @@ jobs:
       matrix:
         project:
           # - native
-          # - normal
+          - normal
           - quarkus
 
     steps:
@@ -50,11 +50,6 @@ jobs:
       with:
         java-version: 23
         distribution: 'temurin'
-
-    - name: Setup Buildpacks CLI
-      uses: buildpacks/github-actions/setup-pack@v5.3.0
-      with:
-        pack-version: 0.33.2
 
     - uses: graalvm/setup-graalvm@v1
       if: matrix.project == 'native'
