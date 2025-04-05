@@ -86,6 +86,7 @@ jobs:
       if: matrix.project == 'quarkus'
       run: |
         ./gradlew -p ${{ matrix.project }} imageBuild \
+          -Dquarkus.container-image.builder=buildpack \
           -Dquarkus.container-image.build=true \
           -Dquarkus.container-image.push=${IMAGE_PUSH} \
           -Dquarkus.container-image.registry=ghcr.io \

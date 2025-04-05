@@ -87,6 +87,7 @@ jobs:
       run: |
         ./mvnw -pl ${{ matrix.project }} quarkus:image-build \
           -Dquarkus.container-image.build=true \
+          -Dquarkus.container-image.builder=buildpack \
           -Dquarkus.container-image.push=${IMAGE_PUSH} \
           -Dquarkus.container-image.registry=ghcr.io \
           -Dquarkus.container-image.username=${GHCR_USERNAME} \
