@@ -16,15 +16,17 @@ jobs:
       packages: write
       contents: read
 
-    env:
-      IMAGE_PUSH: false # Change to true if you want to push images
-
     strategy:
       matrix:
         project:
-          - normal
-          - quarkus
+          #- normal
+          #- quarkus
           - native
+
+    env:
+      IMAGE_PUSH: true # Change to true if you want to push images
+      IMAGE_NAME: ghcr.io/com.nc/java-sbom-cdx-maven-${{ matrix.project }}
+      IMAGE_TAG: ${{ github.sha }}
 
     steps:
     - name: Checkout code
@@ -107,9 +109,23 @@ jobs:
           -Dquarkus.docker.dockerfile-jvm-path=${{ github.workspace }}/maven-parent/${{ matrix.project }}/src/main/docker/Dockerfile.jvm
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
-    - name: Build Container Image for Spring Boot
+    - name: Build Container Image for Spring Boot (Maven)
       if: matrix.project != 'quarkus'
       run: |
-        ../mvnw spring-boot:build-image \
+        CMD="../mvnw spring-boot:build-image \
           -DskipTests \
+          -Dspring-boot.build-image.imageName=${IMAGE_NAME}:${IMAGE_TAG} \
+          -Dspring-boot.build-image.builder=docker.io/paketobuildpacks/builder-jammy-java-tiny:0.0.20 \
+          -Dspring-boot.build-image.env.BP_JVM_VERSION=23 \
+          -Ddocker.publishRegistry.username=${{ github.actor }} \
+          -Ddocker.publishRegistry.password=${{ secrets.GHCR_TOKEN }} \
+          -Ddocker.publishRegistry.url=ghcr.io"
+        
+        if [ "${IMAGE_PUSH}" = "true" ]; then
+          CMD="$CMD -Dspring-boot.build-image.publish=true"
+        fi
+        
+        eval "$CMD"
+      env:
+        IMAGE_PUSH: true
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
