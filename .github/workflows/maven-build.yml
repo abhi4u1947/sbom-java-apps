@@ -25,7 +25,7 @@ jobs:
 
     env:
       IMAGE_PUSH: true # Change to true if you want to push images
-      IMAGE_NAME: ghcr.io/com.nc/java-sbom-cdx-maven-${{ matrix.project }}
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/java-sbom-cdx-maven-${{ matrix.project }}
       IMAGE_TAG: ${{ github.sha }}
 
     steps:
@@ -105,6 +105,7 @@ jobs:
           -Dquarkus.container-image.username=${{ github.actor }} \
           -Dquarkus.container-image.password=${{ secrets.GHCR_TOKEN }} \
           -Dquarkus.container-image.group=${{ github.repository_owner }} \
+          -Dquarkus.container-image.image=java-sbom-cdx-maven-${{ matrix.project }} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
           -Dquarkus.docker.dockerfile-jvm-path=${{ github.workspace }}/maven-parent/${{ matrix.project }}/src/main/docker/Dockerfile.jvm
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}

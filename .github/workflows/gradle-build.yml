@@ -25,7 +25,7 @@ jobs:
 
     env:
       IMAGE_PUSH: true # Change to true if you want to push images
-      IMAGE_NAME: ghcr.io/com.nc/java-sbom-cdx-maven-${{ matrix.project }}
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/java-sbom-cdx-gradle-${{ matrix.project }}
       IMAGE_TAG: ${{ github.sha }}
 
     steps:
@@ -91,7 +91,7 @@ jobs:
         echo "Workspace directory structure:"
         sudo apt-get update && sudo apt-get install -y tree
         tree -a -L 4
-      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
+      working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
@@ -105,6 +105,7 @@ jobs:
           -Dquarkus.container-image.username=${{ github.actor }} \
           -Dquarkus.container-image.password=${{ secrets.GHCR_TOKEN }} \
           -Dquarkus.container-image.group=${{ github.repository_owner }} \
+          -Dquarkus.container-image.image=java-sbom-cdx-gradle-${{ matrix.project }} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
           -Dquarkus.docker.dockerfile-jvm-path=${{ github.workspace }}/gradle-parent/${{ matrix.project }}/src/main/docker/Dockerfile.jvm
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
