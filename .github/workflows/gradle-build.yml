@@ -119,7 +119,7 @@ jobs:
           -PBP_JVM_VERSION=23 \
           -DspringBoot.buildImage.builder=docker.io/paketobuildpacks/builder-jammy-java-tiny:0.0.20 \
           -Ddocker.publishRegistry.username=${{ github.actor }} \
-          -Ddocker.publishRegistry.password=${{ secrets.GHCR_TOKEN }} \
+          -Ddocker.publishRegistry.password=${{ secrets.GIT_ACTIONS_PAT }} \
           -Ddocker.publishRegistry.url=ghcr.io"
         
         if [ "${IMAGE_PUSH}" = "true" ]; then
