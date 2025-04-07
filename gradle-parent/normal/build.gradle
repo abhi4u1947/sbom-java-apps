@@ -48,7 +48,9 @@ def projectProps = [
 def allProps = envVars + projectProps
 
 processResources {
-    expand(allProps)
+    filesMatching("**/application.properties") {
+        expand(allProps)
+    }
 }
 
 tasks.named('bootBuildImage') {
