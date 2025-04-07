@@ -40,7 +40,21 @@ graalvmNative {
 }
 
 tasks.named('bootBuildImage') {
-    builder = "docker.io/paketobuildpacks/builder-noble-java-tiny:0.0.24"
+    imageName = "ghcr.io/your-org/${project.name}:${System.getenv('IMAGE_TAG') ?: 'latest'}"
+    builder = "${System.getenv('BUILDER_IMAGE') ?: 'docker.io/paketobuildpacks/builder-jammy-java-tiny:0.0.20'}"
+    publish = System.getenv('IMAGE_PUSH')?.toBoolean() ?: false
+
+    environment = [
+            "BP_JVM_VERSION": System.getenv('BP_JVM_VERSION') ?: "23"
+    ]
+
+    docker {
+        publishRegistry {
+            username = System.getenv("DOCKER_USERNAME")
+            password = System.getenv("DOCKER_PASSWORD")
+            url      = System.getenv("IMAGE_REGISTRY") ?: "ghcr.io"
+        }
+    }
 }
 
 tasks.named('cyclonedxBom') {

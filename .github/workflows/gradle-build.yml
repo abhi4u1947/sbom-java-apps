@@ -112,28 +112,16 @@ jobs:
 
     - name: Build Container Image for Spring Boot (Gradle)
       if: matrix.project != 'quarkus'
-      run: |
-        echo "Building Spring Boot image for project: ${{ matrix.project }}"
-        echo "Image name: ${IMAGE_NAME}:${IMAGE_TAG}"
-        echo "IMAGE_PUSH = ${IMAGE_PUSH}"
-        
-        CMD="../gradlew bootBuildImage \
-          -DskipTests \
-          --stacktrace \
-          --info \
-          --imageName=${IMAGE_NAME}:${IMAGE_TAG} \
-          -PBP_JVM_VERSION=23 \
-          -DspringBoot.buildImage.builder=docker.io/paketobuildpacks/builder-jammy-java-tiny:0.0.20 \
-          -Ddocker.publishRegistry.username=${{ github.actor }} \
-          -Ddocker.publishRegistry.password=${{ secrets.GIT_ACTIONS_PAT }} \
-          -Ddocker.publishRegistry.url=ghcr.io"
-        
-        if [[ \"$IMAGE_PUSH\" == \"true\" ]]; then
-          CMD=\"$CMD --publishImage\"
-        fi
-        
-        echo "Executing: $CMD"
-        bash -c "$CMD"
       env:
         IMAGE_PUSH: true
+        IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ matrix.project }}
+        IMAGE_TAG: latest
+        BP_JVM_VERSION: 23
+        BUILDER_IMAGE: docker.io/paketobuildpacks/builder-jammy-java-tiny:0.0.20
+        DOCKER_USERNAME: ${{ github.actor }}
+        DOCKER_PASSWORD: ${{ secrets.GIT_ACTIONS_PAT }}
+        DOCKER_REGISTRY: ghcr.io
+      run: |
+        ../gradlew bootBuildImage -DskipTests --info --stacktrace
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
+

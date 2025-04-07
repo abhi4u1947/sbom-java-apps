@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--suppress VulnerableLibrariesLocal, MavenModelInspection -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -16,6 +17,7 @@
     <properties>
         <java.version>23</java.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -43,12 +45,27 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.4.1</version>
                 <configuration>
                     <image>
-                        <builder>docker.io/paketobuildpacks/builder-noble-java-tiny:0.0.24</builder>
+                        <name>${env.IMAGE_NAME}:${env.IMAGE_TAG}</name>
+                        <builder>${env.BUILDER_IMAGE_NAME}:${env.BUILDER_IMAGE_TAG}</builder>
+                        <publish>${env.IMAGE_PUSH}</publish>
+                        <env>
+                            <BP_JVM_VERSION>${env.BP_JVM_VERSION}</BP_JVM_VERSION>
+                        </env>
+                        <docker>
+                            <publishRegistry>
+                                <username>${env.DOCKER_USERNAME}</username>
+                                <password>${env.DOCKER_PASSWORD}</password>
+                                <url>${env.IMAGE_REGISTRY}</url>
+                            </publishRegistry>
+                        </docker>
+                        <verboseLogging>true</verboseLogging>
                     </image>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.cyclonedx</groupId>
                 <artifactId>cyclonedx-maven-plugin</artifactId>
