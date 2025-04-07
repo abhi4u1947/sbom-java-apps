@@ -7,8 +7,6 @@ plugins {
 
 group = 'com.nc'
 version = '1.0-SNAPSHOT'
-//noinspection GroovyUnusedAssignment
-name = 'java-sbom-cdx-gradle'
 
 //noinspection GroovyUnusedAssignment
 archivesBaseName = 'java-sbom-cdx-gradle' // This sets the artifactId
@@ -44,8 +42,6 @@ def envVars = [
 // Add selected project properties (like version, group, etc.)
 def projectProps = [
         appVersion: project.version,
-        appGroup  : project.group,
-        appName   : project.name
 ]
 
 // Merge both maps
