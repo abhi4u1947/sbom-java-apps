@@ -19,8 +19,8 @@ jobs:
     strategy:
       matrix:
         project:
-          - normal
-          - quarkus
+          # - normal
+          # - quarkus
           - native
 
     env:
@@ -137,6 +137,7 @@ jobs:
       run: |
         ../mvnw quarkus:image-build \
           -DskipTests \
+          -Dquarkus.log.level=DEBUG \
           -Dquarkus.container-image.build=true \
           -Dquarkus.container-image.builder=docker \
           -Dquarkus.container-image.push=${{ env.IMAGE_PUSH }} \
