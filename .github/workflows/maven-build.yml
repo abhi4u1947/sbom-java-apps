@@ -25,6 +25,19 @@ jobs:
 
     env:
       IMAGE_PUSH: true # Change to true if you want to push images
+      IMAGE_REGISTRY: ghcr.io
+      IMAGE_GROUP: ${{ github.repository_owner }}
+      IMAGE_NAME: java-sbom-cdx-maven-${{ matrix.project }}
+      IMAGE_TAG: ${{ github.sha }}
+      # OCI Metadata
+      IMAGE_AUTHOR: ${{ github.actor }}
+      IMAGE_SOURCE: https://github.com/${{ github.repository }}
+      IMAGE_LICENSE: Apache-2.0
+      BUILDER_IMAGE_NAME: docker.io/paketobuildpacks/builder-jammy-java-tiny
+      BUILDER_IMAGE_TAG: 0.0.20
+      BP_JVM_VERSION: 23
+      IMAGE_REGISTRY_USERNAME: ${{ github.actor }}
+      IMAGE_REGISTRY_PASSWORD: ${{ secrets.GIT_ACTIONS_PAT }}
 
     steps:
     - name: Checkout code
@@ -121,15 +134,6 @@ jobs:
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
-      env:
-        IMAGE_REGISTRY: ghcr.io
-        IMAGE_GROUP: ${{ github.repository_owner }}
-        IMAGE_NAME: java-sbom-cdx-maven-${{ matrix.project }}
-        IMAGE_TAG: ${{ github.sha }}
-        # OCI Metadata
-        IMAGE_AUTHOR: ${{ github.actor }}
-        IMAGE_SOURCE: https://github.com/${{ github.repository }}
-        IMAGE_LICENSE: Apache-2.0
       run: |
         ../mvnw quarkus:image-build \
           -DskipTests \
@@ -143,20 +147,6 @@ jobs:
 
     - name: Build Container Image for Spring Boot (Maven)
       if: matrix.project != 'quarkus'
-      env:
-        IMAGE_REGISTRY: ghcr.io
-        IMAGE_GROUP: ${{ github.repository_owner }}
-        IMAGE_NAME: java-sbom-cdx-maven-${{ matrix.project }}
-        IMAGE_TAG: ${{ github.sha }}
-        # OCI Metadata
-        IMAGE_AUTHOR: ${{ github.actor }}
-        IMAGE_SOURCE: https://github.com/${{ github.repository }}
-        IMAGE_LICENSE: Apache-2.0
-        BUILDER_IMAGE_NAME: docker.io/paketobuildpacks/builder-jammy-java-tiny
-        BUILDER_IMAGE_TAG: 0.0.20
-        BP_JVM_VERSION: 23
-        IMAGE_REGISTRY_USERNAME: ${{ github.actor }}
-        IMAGE_REGISTRY_PASSWORD: ${{ secrets.GIT_ACTIONS_PAT }}
       run: |
         ../mvnw spring-boot:build-image -DskipTests
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
