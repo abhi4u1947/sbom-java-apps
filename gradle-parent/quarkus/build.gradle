@@ -7,6 +7,9 @@ plugins {
 group = 'com.nc'
 version = '1.0.0-SNAPSHOT'
 //noinspection GroovyUnusedAssignment
+name = 'java-sbom-cdx-gradle-quarkus'
+
+//noinspection GroovyUnusedAssignment
 archivesBaseName = 'java-sbom-cdx-gradle-quarkus'
 
 repositories {
@@ -28,8 +31,26 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+def envVars = [
+        IMAGE_REGISTRY: System.getenv('IMAGE_REGISTRY') ?: 'ghcr.io',
+        IMAGE_NAME    : System.getenv('IMAGE_NAME') ?: 'default',
+        IMAGE_TAG     : System.getenv('IMAGE_TAG') ?: 'latest',
+        IMAGE_AUTHOR  : System.getenv('IMAGE_AUTHOR') ?: 'unknown',
+        IMAGE_LICENSE : System.getenv('IMAGE_LICENSE') ?: 'Apache-2.0'
+]
+
+// Add selected project properties (like version, group, etc.)
+def projectProps = [
+        version: project.version,
+        group  : project.group,
+        name   : project.name
+]
+
+// Merge both maps
+def allProps = envVars + projectProps
+
 processResources {
-    expand(project.properties.findAll { k, v -> v instanceof String })
+    expand(allProps)
 }
 
 tasks.named('cyclonedxBom') {
