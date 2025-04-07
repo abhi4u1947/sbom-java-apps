@@ -20,8 +20,8 @@ jobs:
       matrix:
         project:
           # - normal
-          # - quarkus
-          - native
+          - quarkus
+          # - native
 
     env:
       IMAGE_PUSH: true # Change to true if you want to push images
