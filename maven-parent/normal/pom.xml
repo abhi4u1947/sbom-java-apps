@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--suppress MavenModelInspection -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -34,10 +35,26 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.4.1</version>
                 <configuration>
+                    <environmentVariables>
+                        <BP_JVM_VERSION>${env.BP_JVM_VERSION}</BP_JVM_VERSION>
+                    </environmentVariables>
                     <image>
-                        <builder>docker.io/paketobuildpacks/builder-noble-java-tiny:0.0.24</builder>
+                        <name>${env.IMAGE_REGISTRY}/${env.IMAGE_GROUP}/${env.IMAGE_NAME}:${env.IMAGE_TAG}</name>
+                        <builder>${env.BUILDER_IMAGE_NAME}:${env.BUILDER_IMAGE_TAG}</builder>
+                        <publish>${env.IMAGE_PUSH}</publish>
+                        <env>
+                            <BP_JVM_VERSION>${env.BP_JVM_VERSION}</BP_JVM_VERSION>
+                        </env>
+                        <verboseLogging>true</verboseLogging>
                     </image>
+                    <docker>
+                        <publishRegistry>
+                            <username>${env.IMAGE_REGISTRY_USERNAME}</username>
+                            <password>${env.IMAGE_REGISTRY_PASSWORD}</password>
+                        </publishRegistry>
+                    </docker>
                 </configuration>
             </plugin>
             <plugin>

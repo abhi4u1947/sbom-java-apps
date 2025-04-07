@@ -48,7 +48,9 @@ tasks.named('bootBuildImage') {
             "BP_JVM_VERSION": System.getenv('BP_JVM_VERSION') ?: "23"
     ]
 
+    //noinspection GrUnresolvedAccess
     docker {
+        //noinspection GrUnresolvedAccess
         publishRegistry {
             username = System.getenv("IMAGE_REGISTRY_USERNAME")
             password = System.getenv("IMAGE_REGISTRY_PASSWORD")

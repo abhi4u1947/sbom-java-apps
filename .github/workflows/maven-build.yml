@@ -19,8 +19,8 @@ jobs:
     strategy:
       matrix:
         project:
-          #- normal
-          #- quarkus
+          - normal
+          - quarkus
           - native
 
     env:
@@ -31,6 +31,34 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+        
+    # Maven Cache
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          maven-${{ runner.os }}-
+
+    # GraalVM Native Image Cache
+    - name: Cache GraalVM native-image cache
+      uses: actions/cache@v4
+      if: matrix.project == 'native'
+      with:
+        path: ~/.native-image
+        key: graalvm-${{ runner.os }}-${{ hashFiles('**/pom.xml', '**/*.gradle*') }}
+        restore-keys: |
+          graalvm-${{ runner.os }}-
+
+    # Docker Layer Cache (for pack CLI or spring-boot:build-image)
+    - name: Cache Docker layers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/buildpacks
+        key: docker-layers-${{ runner.os }}-${{ hashFiles('**/pom.xml', '**/*.gradle*') }}
+        restore-keys: |
+          docker-layers-${{ runner.os }}-
 
     - name: Login to Docker Hub (for pulling base images)
       uses: docker/login-action@v3
@@ -52,9 +80,6 @@ jobs:
       with:
         java-version: 23
         distribution: 'temurin'
-        cache: 'maven'
-        cache-dependency-path: |
-          maven-parent/${{ matrix.project }}/pom.xml
 
     - uses: graalvm/setup-graalvm@v1
       if: matrix.project == 'native'

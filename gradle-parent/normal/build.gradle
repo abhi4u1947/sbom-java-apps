@@ -31,7 +31,22 @@ tasks.test {
 }
 
 tasks.named('bootBuildImage') {
-    builder = "docker.io/paketobuildpacks/builder-noble-java-tiny:0.0.24"
+    imageName = "${System.getenv('IMAGE_REGISTRY')}/${System.getenv('IMAGE_GROUP')}/${System.getenv('IMAGE_NAME')}:${System.getenv('IMAGE_TAG') ?: 'latest'}"
+    builder = "${System.getenv('BUILDER_IMAGE_NAME')}:${System.getenv('BUILDER_IMAGE_TAG')}"
+    publish = System.getenv('IMAGE_PUSH')?.toBoolean() ?: false
+
+    environment = [
+            "BP_JVM_VERSION": System.getenv('BP_JVM_VERSION') ?: "23"
+    ]
+
+    //noinspection GrUnresolvedAccess
+    docker {
+        //noinspection GrUnresolvedAccess
+        publishRegistry {
+            username = System.getenv("IMAGE_REGISTRY_USERNAME")
+            password = System.getenv("IMAGE_REGISTRY_PASSWORD")
+        }
+    }
 }
 
 tasks.named('cyclonedxBom') {
