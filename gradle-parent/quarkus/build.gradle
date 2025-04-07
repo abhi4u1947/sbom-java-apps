@@ -41,7 +41,7 @@ def envVars = [
 
 // Add selected project properties (like version, group, etc.)
 def projectProps = [
-        appVersion: project.version,
+        appVersion: version,
 ]
 
 // Merge both maps
