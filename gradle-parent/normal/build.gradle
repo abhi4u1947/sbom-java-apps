@@ -1,12 +1,13 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.1'
+    id 'org.springframework.boot' version '3.4.2'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.cyclonedx.bom' version '2.0.0'
 }
 
 group = 'com.nc'
-version = '1.0'
+version = '1.0-SNAPSHOT'
+
 //noinspection GroovyUnusedAssignment
 archivesBaseName = 'java-sbom-cdx-gradle' // This sets the artifactId
 
@@ -30,8 +31,60 @@ tasks.test {
     useJUnitPlatform()
 }
 
+def envVars = [
+        IMAGE_REGISTRY: System.getenv('IMAGE_REGISTRY') ?: 'ghcr.io',
+        IMAGE_NAME    : System.getenv('IMAGE_NAME') ?: 'default',
+        IMAGE_GROUP   : System.getenv('IMAGE_GROUP') ?: 'default',
+        IMAGE_TAG     : System.getenv('IMAGE_TAG') ?: 'latest',
+        IMAGE_AUTHOR  : System.getenv('IMAGE_AUTHOR') ?: 'unknown',
+        IMAGE_LICENSE : System.getenv('IMAGE_LICENSE') ?: 'Apache-2.0',
+        IMAGE_SOURCE  : System.getenv('IMAGE_SOURCE') ?: 'unknown'
+]
+
+// Add selected project properties (like version, group, etc.)
+def projectProps = [
+        appVersion: project.version,
+]
+
+// Merge both maps
+def allProps = envVars + projectProps
+
+processResources {
+    filesMatching("**/application.properties") {
+        expand(allProps)
+    }
+}
+
 tasks.named('bootBuildImage') {
-    builder = "docker.io/paketobuildpacks/builder-noble-java-tiny:0.0.24"
+    def registry = System.getenv('IMAGE_REGISTRY')
+    def group = System.getenv('IMAGE_GROUP')
+    def name = System.getenv('IMAGE_NAME')
+    def shaTag = System.getenv('IMAGE_TAG')
+    def versionTag = project.version
+    def latestTag = 'latest'
+
+    imageName = "${registry}/${group}/${name}:${shaTag}"
+    builder = "${System.getenv('BUILDER_IMAGE_NAME')}:${System.getenv('BUILDER_IMAGE_TAG')}"
+    publish = System.getenv('IMAGE_PUSH')?.toBoolean() ?: false
+
+    environment = [
+            "BP_JVM_VERSION": System.getenv('BP_JVM_VERSION'),
+            "BP_OCI_AUTHORS": System.getenv('IMAGE_AUTHOR'),
+            "BP_OCI_SOURCE": System.getenv('IMAGE_SOURCE'),
+            "BP_OCI_LICENSES": System.getenv('IMAGE_LICENSE')
+    ]
+
+    tags = [
+            "${registry}/${group}/${name}:${versionTag}",
+            "${registry}/${group}/${name}:${latestTag}"
+    ]
+
+    docker {
+        publishRegistry {
+            username = System.getenv("IMAGE_REGISTRY_USERNAME")
+            password = System.getenv("IMAGE_REGISTRY_PASSWORD")
+        }
+    }
 }
 
 tasks.named('cyclonedxBom') {

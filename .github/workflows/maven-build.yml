@@ -1,0 +1,152 @@
+name: Maven Build and SBOM
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+      contents: write
+
+    strategy:
+      matrix:
+        project:
+          - normal
+          - quarkus
+          - native
+
+    env:
+      IMAGE_PUSH: true # Change to true if you want to push images
+      IMAGE_REGISTRY: ghcr.io
+      IMAGE_GROUP: ${{ github.repository_owner }}
+      IMAGE_NAME: java-sbom-cdx-maven-${{ matrix.project }}
+      IMAGE_TAG: ${{ github.sha }}
+      # OCI Metadata
+      IMAGE_AUTHOR: ${{ github.actor }}
+      IMAGE_SOURCE: https://github.com/${{ github.repository }}
+      IMAGE_LICENSE: Apache-2.0
+      BUILDER_IMAGE_NAME: docker.io/paketobuildpacks/builder-jammy-java-tiny
+      BUILDER_IMAGE_TAG: 0.0.20
+      BP_JVM_VERSION: 23
+      IMAGE_REGISTRY_USERNAME: ${{ github.actor }}
+      IMAGE_REGISTRY_PASSWORD: ${{ secrets.GIT_ACTIONS_PAT }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+        
+    # Maven Cache
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ matrix.project }}-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          maven-${{ matrix.project }}-${{ runner.os }}-
+
+    # GraalVM Native Image Cache
+    - name: Cache GraalVM native-image cache
+      uses: actions/cache@v4
+      if: matrix.project == 'native'
+      with:
+        path: ~/.native-image
+        key: graalvm-${{ matrix.project }}-${{ runner.os }}-${{ hashFiles('**/pom.xml', '**/*.gradle*') }}
+        restore-keys: |
+          graalvm-${{ matrix.project }}-${{ runner.os }}-
+
+    # Docker Layer Cache (for pack CLI or spring-boot:build-image)
+    - name: Cache Docker layers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/buildpacks
+        key: docker-layers-${{ matrix.project }}-${{ runner.os }}-${{ hashFiles('**/pom.xml', '**/*.gradle*') }}
+        restore-keys: |
+          docker-layers-${{ matrix.project }}-${{ runner.os }}-
+
+    - name: Login to Docker Hub (for pulling base images)
+      uses: docker/login-action@v3
+      with:
+        registry: docker.io
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Login to GitHub Container Registry (for pushing final image)
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up JDK 23
+      if: matrix.project != 'native'
+      uses: actions/setup-java@v4
+      with:
+        java-version: 23
+        distribution: 'temurin'
+
+    - uses: graalvm/setup-graalvm@v1
+      if: matrix.project == 'native'
+      with:
+        java-version: 23
+        distribution: 'graalvm'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: GraalVM image validation
+      if: matrix.project == 'native'
+      run: |
+        echo "GRAALVM_HOME: $GRAALVM_HOME"
+        echo "JAVA_HOME: $JAVA_HOME"
+        java --version
+        native-image --version
+
+    - name: Grant execute permission for maven
+      run: chmod +x ../mvnw
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
+
+    - name: Build JAR with Maven
+      if: matrix.project != 'native'
+      run: ../mvnw package
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
+
+    - name: Build Native Executable (only for native project)
+      if: matrix.project == 'native'
+      run: ../mvnw -Pnative native:compile
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
+
+    - name: Generate SBOM
+      run: ../mvnw cyclonedx:makeAggregateBom
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
+
+    - name: Show current workspace
+      run: |
+        echo "Workspace directory structure:"
+        sudo apt-get update && sudo apt-get install -y tree
+        tree -a -L 4
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
+
+    - name: Build Container Image for Quarkus
+      if: matrix.project == 'quarkus'
+      run: |
+        ../mvnw quarkus:image-build \
+          -DskipTests \
+          -Dquarkus.container-image.build=true \
+          -Dquarkus.container-image.builder=docker \
+          -Dquarkus.container-image.push=${{ env.IMAGE_PUSH }} \
+          -Dquarkus.container-image.username=${{ github.actor }} \
+          -Dquarkus.container-image.password=${{ secrets.GIT_ACTIONS_PAT }} \
+          -Dquarkus.docker.dockerfile-jvm-path=${{ github.workspace }}/maven-parent/${{ matrix.project }}/src/main/docker/Dockerfile.jvm \
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
+
+    - name: Build Container Image for Spring Boot (Maven)
+      if: matrix.project != 'quarkus'
+      run: |
+        ../mvnw spring-boot:build-image -DskipTests
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
