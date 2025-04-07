@@ -155,7 +155,7 @@ jobs:
         BUILDER_IMAGE_TAG: 0.0.20
         BP_JVM_VERSION: 23
         IMAGE_REGISTRY_USERNAME: ${{ github.actor }}
-        IMAGE_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN  }}
+        IMAGE_REGISTRY_PASSWORD: ${{ secrets.GIT_ACTIONS_PAT }}
       run: |
         ../mvnw spring-boot:build-image -DskipTests
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
