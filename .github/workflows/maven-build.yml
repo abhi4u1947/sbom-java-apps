@@ -120,7 +120,8 @@ jobs:
           -Dspring-boot.build-image.env.BP_JVM_VERSION=23 \
           -Ddocker.publishRegistry.username=${{ github.actor }} \
           -Ddocker.publishRegistry.password=${{ secrets.GIT_ACTIONS_PAT }} \
-          -Ddocker.publishRegistry.url=ghcr.io"
+          -Ddocker.publishRegistry.url=ghcr.io" \
+          -Dspring-boot.build-image.verboseLogging=true
         
         if [ "${IMAGE_PUSH}" = "true" ]; then
           CMD="$CMD -Dspring-boot.build-image.publish=true"

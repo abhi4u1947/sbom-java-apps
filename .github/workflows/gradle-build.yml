@@ -115,6 +115,8 @@ jobs:
       run: |
         CMD="../gradlew bootBuildImage \
           -DskipTests \
+          --stacktrace \                     # Shows stack trace on failure
+          --info \                           # Gives Gradle info logs
           --imageName=${IMAGE_NAME}:${IMAGE_TAG} \
           -PBP_JVM_VERSION=23 \
           -DspringBoot.buildImage.builder=docker.io/paketobuildpacks/builder-jammy-java-tiny:0.0.20 \
