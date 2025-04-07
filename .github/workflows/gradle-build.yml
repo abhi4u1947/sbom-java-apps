@@ -142,6 +142,7 @@ jobs:
           -Dquarkus.log.level=DEBUG \
           -Dquarkus.container-image.build=true \
           -Dquarkus.container-image.builder=docker \
+          -Dquarkus.docker.buildx.platform=linux/amd64 \
           -Dquarkus.container-image.push=${{ env.IMAGE_PUSH }} \
           -Dquarkus.container-image.username=${{ github.actor }} \
           -Dquarkus.container-image.password=${{ secrets.GIT_ACTIONS_PAT }} \
