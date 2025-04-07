@@ -129,14 +129,14 @@ jobs:
           -Dquarkus.container-image.push=${{ env.IMAGE_PUSH }} \
           -Dquarkus.container-image.registry=ghcr.io \
           -Dquarkus.container-image.username=${{ github.actor }} \
-          -Dquarkus.container-image.password=${{ secrets.GITHUB_TOKEN   }} \
+          -Dquarkus.container-image.password=${{ secrets.GIT_ACTIONS_PAT }} \
           -Dquarkus.container-image.group=${{ github.repository_owner }} \
           -Dquarkus.container-image.name=java-sbom-cdx-maven-${{ matrix.project }} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
           -Dquarkus.docker.dockerfile-jvm-path=${{ github.workspace }}/maven-parent/${{ matrix.project }}/src/main/docker/Dockerfile.jvm \
-          -Dquarkus.container-image.labels."BP_OCI_AUTHORS"="${{ github.actor }}" \
-          -Dquarkus.container-image.labels."BP_OCI_LICENSES"="Apache-2.0" \
-          -Dquarkus.container-image.labels."BP_OCI_SOURCE"="${{ github.repository }}"
+          -Dquarkus.container-image.labels."org.opencontainers.image.authors"="${{ github.actor }}" \
+          -Dquarkus.container-image.labels."org.opencontainers.image.licenses"="Apache-2.0" \
+          -Dquarkus.container-image.labels."org.opencontainers.image.source"="https://github.com/${{ github.repository }}"
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
     - name: Build Container Image for Spring Boot (Maven)
