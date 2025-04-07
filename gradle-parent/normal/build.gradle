@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.nc'
-version = '1.0'
+version = '1.0-SNAPSHOT'
 //noinspection GroovyUnusedAssignment
 archivesBaseName = 'java-sbom-cdx-gradle' // This sets the artifactId
 
@@ -28,6 +28,10 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+processResources {
+    expand(project.properties.findAll { k, v -> v instanceof String })
 }
 
 tasks.named('bootBuildImage') {

@@ -28,6 +28,10 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+processResources {
+    expand(project.properties.findAll { k, v -> v instanceof String })
+}
+
 tasks.named('cyclonedxBom') {
     schemaVersion = "1.6"
     includeConfigs = ["runtimeClasspath"]
