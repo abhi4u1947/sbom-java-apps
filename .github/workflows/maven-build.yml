@@ -133,7 +133,10 @@ jobs:
           -Dquarkus.container-image.group=${{ github.repository_owner }} \
           -Dquarkus.container-image.name=java-sbom-cdx-maven-${{ matrix.project }} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
-          -Dquarkus.docker.dockerfile-jvm-path=${{ github.workspace }}/maven-parent/${{ matrix.project }}/src/main/docker/Dockerfile.jvm
+          -Dquarkus.docker.dockerfile-jvm-path=${{ github.workspace }}/maven-parent/${{ matrix.project }}/src/main/docker/Dockerfile.jvm \
+          -Dquarkus.container-image.labels."BP_OCI_AUTHORS"="${{ github.actor }}" \
+          -Dquarkus.container-image.labels."BP_OCI_LICENSES"="Apache-2.0" \
+          -Dquarkus.container-image.labels."BP_OCI_SOURCE"="${{ github.repository }}"
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
     - name: Build Container Image for Spring Boot (Maven)
@@ -144,6 +147,10 @@ jobs:
         IMAGE_NAME: java-sbom-cdx-maven-${{ matrix.project }}
         IMAGE_TAG: ${{ github.sha }}
         IMAGE_PUSH: ${{ env.IMAGE_PUSH }}
+        # OCI Metadata
+        IMAGE_AUTHOR: ${{ github.actor }}
+        IMAGE_SOURCE: ${{ github.repository }}
+        IMAGE_LICENSE: Apache-2.0
         BUILDER_IMAGE_NAME: docker.io/paketobuildpacks/builder-jammy-java-tiny
         BUILDER_IMAGE_TAG: 0.0.20
         BP_JVM_VERSION: 23
