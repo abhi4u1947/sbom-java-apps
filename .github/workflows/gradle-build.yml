@@ -72,7 +72,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GIT_ACTIONS_PAT }}
+        password: ${{ secrets.GITHUB_TOKEN  }}
 
     - name: Set up JDK 23
       if: matrix.project != 'native'
@@ -131,7 +131,7 @@ jobs:
           -Dquarkus.container-image.push=${{ env.IMAGE_PUSH }} \
           -Dquarkus.container-image.registry=ghcr.io \
           -Dquarkus.container-image.username=${{ github.actor }} \
-          -Dquarkus.container-image.password=${{ secrets.GIT_ACTIONS_PAT }} \
+          -Dquarkus.container-image.password=${{ secrets.GITHUB_TOKEN  }} \
           -Dquarkus.container-image.group=${{ github.repository_owner }} \
           -Dquarkus.container-image.name=java-sbom-cdx-gradle-${{ matrix.project }} \
           -Dquarkus.container-image.tag=${{ github.sha }} \
@@ -150,7 +150,7 @@ jobs:
         BUILDER_IMAGE_TAG: 0.0.20
         BP_JVM_VERSION: 23
         IMAGE_REGISTRY_USERNAME: ${{ github.actor }}
-        IMAGE_REGISTRY_PASSWORD: ${{ secrets.GIT_ACTIONS_PAT }}
+        IMAGE_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN  }}
       run: |
         ../gradlew --no-daemon bootBuildImage -DskipTests --info --stacktrace
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
