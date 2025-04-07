@@ -40,8 +40,8 @@ graalvmNative {
 }
 
 tasks.named('bootBuildImage') {
-    imageName = "ghcr.io/your-org/${project.name}:${System.getenv('IMAGE_TAG') ?: 'latest'}"
-    builder = "${System.getenv('BUILDER_IMAGE') ?: 'docker.io/paketobuildpacks/builder-jammy-java-tiny:0.0.20'}"
+    imageName = "${System.getenv('IMAGE_REGISTRY')}/${System.getenv('IMAGE_GROUP')}/${System.getenv('IMAGE_NAME')}:${System.getenv('IMAGE_TAG') ?: 'latest'}"
+    builder = "${System.getenv('BUILDER_IMAGE_NAME')}:${System.getenv('BUILDER_IMAGE_TAG')}"
     publish = System.getenv('IMAGE_PUSH')?.toBoolean() ?: false
 
     environment = [
@@ -50,9 +50,8 @@ tasks.named('bootBuildImage') {
 
     docker {
         publishRegistry {
-            username = System.getenv("DOCKER_USERNAME")
-            password = System.getenv("DOCKER_PASSWORD")
-            url      = System.getenv("IMAGE_REGISTRY") ?: "ghcr.io"
+            username = System.getenv("IMAGE_REGISTRY_USERNAME")
+            password = System.getenv("IMAGE_REGISTRY_PASSWORD")
         }
     }
 }

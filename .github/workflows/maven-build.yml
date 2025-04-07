@@ -44,7 +44,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.GIT_ACTIONS_PAT }}
 
     - name: Set up JDK 23
       if: matrix.project != 'native'
@@ -116,15 +116,16 @@ jobs:
     - name: Build Container Image for Spring Boot (Maven)
       if: matrix.project != 'quarkus'
       env:
-        IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ matrix.project }}
-        IMAGE_TAG: latest
+        IMAGE_REGISTRY: ghcr.io
+        IMAGE_GROUP: ${{ github.repository_owner }}
+        IMAGE_NAME: java-sbom-cdx-maven-${{ matrix.project }}
+        IMAGE_TAG: ${{ github.sha }}
         IMAGE_PUSH: ${{ env.IMAGE_PUSH }}
         BUILDER_IMAGE_NAME: docker.io/paketobuildpacks/builder-jammy-java-tiny
         BUILDER_IMAGE_TAG: 0.0.20
         BP_JVM_VERSION: 23
-        DOCKER_USERNAME: ${{ github.actor }}
-        DOCKER_PASSWORD: ${{ secrets.GIT_ACTIONS_PAT }}
-        IMAGE_REGISTRY: ghcr.io
+        IMAGE_REGISTRY_USERNAME: ${{ github.actor }}
+        IMAGE_REGISTRY_PASSWORD: ${{ secrets.GIT_ACTIONS_PAT }}
       run: |
         ../mvnw spring-boot:build-image -DskipTests
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
