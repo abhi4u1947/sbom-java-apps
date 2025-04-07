@@ -139,7 +139,9 @@ jobs:
       run: |
         ../gradlew --no-daemon imageBuild \
           -DskipTests \
-          -Dquarkus.log.level=DEBUG \
+          --info \
+          --stacktrace \
+          -Dquarkus.log.level=INFO \
           -Dquarkus.container-image.build=true \
           -Dquarkus.container-image.builder=docker \
           -Dquarkus.docker.buildx.platform=linux/amd64 \
