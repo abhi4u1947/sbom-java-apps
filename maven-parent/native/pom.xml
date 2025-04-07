@@ -51,6 +51,11 @@
                         <name>${env.IMAGE_REGISTRY}/${env.IMAGE_GROUP}/${env.IMAGE_NAME}:${env.IMAGE_TAG}</name>
                         <builder>${env.BUILDER_IMAGE_NAME}:${env.BUILDER_IMAGE_TAG}</builder>
                         <publish>${env.IMAGE_PUSH}</publish>
+                        <!-- Add additional tags -->
+                        <tags>
+                            <tag>${env.IMAGE_REGISTRY}/${env.IMAGE_GROUP}/${env.IMAGE_NAME}:${project.version}</tag>
+                            <tag>${env.IMAGE_REGISTRY}/${env.IMAGE_GROUP}/${env.IMAGE_NAME}:latest</tag>
+                        </tags>
                         <env>
                             <BP_JVM_VERSION>${env.BP_JVM_VERSION}</BP_JVM_VERSION>
                             <!-- OCI Metadata -->

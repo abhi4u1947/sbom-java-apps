@@ -123,22 +123,24 @@ jobs:
 
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
+      env:
+        IMAGE_REGISTRY: ghcr.io
+        IMAGE_GROUP: ${{ github.repository_owner }}
+        IMAGE_NAME: java-sbom-cdx-gradle-${{ matrix.project }}
+        IMAGE_TAG: ${{ github.sha }}
+        # OCI Metadata
+        IMAGE_AUTHOR: ${{ github.actor }}
+        IMAGE_SOURCE: https://github.com/${{ github.repository }}
+        IMAGE_LICENSE: Apache-2.0
       run: |
         ../gradlew --no-daemon imageBuild \
           -DskipTests \
           -Dquarkus.container-image.build=true \
           -Dquarkus.container-image.builder=docker \
           -Dquarkus.container-image.push=${{ env.IMAGE_PUSH }} \
-          -Dquarkus.container-image.registry=ghcr.io \
           -Dquarkus.container-image.username=${{ github.actor }} \
           -Dquarkus.container-image.password=${{ secrets.GIT_ACTIONS_PAT }} \
-          -Dquarkus.container-image.group=${{ github.repository_owner }} \
-          -Dquarkus.container-image.name=java-sbom-cdx-gradle-${{ matrix.project }} \
-          -Dquarkus.container-image.tag=${{ github.sha }} \
           -Dquarkus.docker.dockerfile-jvm-path=${{ github.workspace }}/gradle-parent/${{ matrix.project }}/src/main/docker/Dockerfile.jvm \
-          -Dquarkus.container-image.labels."org.opencontainers.image.authors"="${{ github.actor }}" \
-          -Dquarkus.container-image.labels."org.opencontainers.image.licenses"="Apache-2.0" \
-          -Dquarkus.container-image.labels."org.opencontainers.image.source"="https://github.com/${{ github.repository }}"
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
 
     - name: Build Container Image for Spring Boot (Gradle)
@@ -148,7 +150,6 @@ jobs:
         IMAGE_GROUP: ${{ github.repository_owner }}
         IMAGE_NAME: java-sbom-cdx-gradle-${{ matrix.project }}
         IMAGE_TAG: ${{ github.sha }}
-        IMAGE_PUSH: ${{ env.IMAGE_PUSH }}
         # OCI Metadata
         IMAGE_AUTHOR: ${{ github.actor }}
         IMAGE_SOURCE: https://github.com/${{ github.repository }}

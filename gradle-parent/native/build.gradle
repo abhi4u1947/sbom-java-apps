@@ -39,8 +39,23 @@ graalvmNative {
     }
 }
 
+// This enables variable substitution in resource files (like application.properties)
+tasks.named('processResources') {
+    inputs.properties(project.properties)
+    filesMatching("**/application.properties") {
+        expand(project.properties)
+    }
+}
+
 tasks.named('bootBuildImage') {
-    imageName = "${System.getenv('IMAGE_REGISTRY')}/${System.getenv('IMAGE_GROUP')}/${System.getenv('IMAGE_NAME')}:${System.getenv('IMAGE_TAG') ?: 'latest'}"
+    def registry = System.getenv('IMAGE_REGISTRY')
+    def group = System.getenv('IMAGE_GROUP')
+    def name = System.getenv('IMAGE_NAME')
+    def shaTag = System.getenv('IMAGE_TAG')
+    def versionTag = project.version
+    def latestTag = 'latest'
+
+    imageName = "${registry}/${group}/${name}:${shaTag}"
     builder = "${System.getenv('BUILDER_IMAGE_NAME')}:${System.getenv('BUILDER_IMAGE_TAG')}"
     publish = System.getenv('IMAGE_PUSH')?.toBoolean() ?: false
 
@@ -51,9 +66,12 @@ tasks.named('bootBuildImage') {
             "BP_OCI_LICENSES": System.getenv('IMAGE_LICENSE')
     ]
 
-    //noinspection GrUnresolvedAccess
+    tags = [
+            "${registry}/${group}/${name}:${versionTag}",
+            "${registry}/${group}/${name}:${latestTag}"
+    ]
+
     docker {
-        //noinspection GrUnresolvedAccess
         publishRegistry {
             username = System.getenv("IMAGE_REGISTRY_USERNAME")
             password = System.getenv("IMAGE_REGISTRY_PASSWORD")
