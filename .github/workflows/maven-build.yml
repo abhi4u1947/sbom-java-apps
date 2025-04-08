@@ -19,9 +19,9 @@ jobs:
     strategy:
       matrix:
         project:
-          # - normal
+          - normal
           - quarkus
-          # - native
+          - native
 
     env:
       IMAGE_PUSH: true # Change to true if you want to push images
@@ -99,14 +99,6 @@ jobs:
         distribution: 'graalvm'
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: GraalVM image validation
-      if: matrix.project == 'native'
-      run: |
-        echo "GRAALVM_HOME: $GRAALVM_HOME"
-        echo "JAVA_HOME: $JAVA_HOME"
-        java --version
-        native-image --version
-
     - name: Grant execute permission for maven
       run: chmod +x ../mvnw
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
@@ -125,11 +117,11 @@ jobs:
       run: ../mvnw cyclonedx:makeAggregateBom
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
-    - name: Show current workspace
+    - name: Show current workspace (build|target)
       run: |
         echo "Workspace directory structure:"
         sudo apt-get update && sudo apt-get install -y tree
-        tree -a -L 4
+        tree -a -L 4 -P 'build|target'
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
     - name: Build Container Image for Quarkus

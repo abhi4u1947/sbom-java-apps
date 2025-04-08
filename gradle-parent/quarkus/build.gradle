@@ -3,7 +3,7 @@ import io.quarkus.gradle.tasks.QuarkusBuild
 plugins {
     id 'java'
     id 'io.quarkus' version '3.21.0'
-    id 'org.cyclonedx.bom' version '2.0.0'
+    id 'org.cyclonedx.bom' version '2.2.0'
 }
 
 group = 'com.nc'
@@ -50,5 +50,17 @@ processResources {
 
 tasks.named('cyclonedxBom') {
     schemaVersion = "1.6"
-    includeConfigs = ["runtimeClasspath"]
+    includeConfigs = ["runtimeClasspath", "compileClasspath"]
+
+    // Optional: Avoid including the root or test-only subprojects
+    skipProjects = [rootProject.name]
+
+    projectType = "application"
+
+    includeBomSerialNumber = true
+    includeLicenseText = false
+
+    destination = file("build/reports")
+    outputName = "sbom.cdx"
+    outputFormat = "json"
 }
