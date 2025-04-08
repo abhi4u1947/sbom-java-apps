@@ -117,15 +117,6 @@ jobs:
       run: ../mvnw cyclonedx:makeAggregateBom
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
 
-    - name: Show current workspace (build|target)
-      run: |
-        echo "Workspace directory structure:"
-        for d in $(find . -type d \( -name build -o -name target \) | sort); do
-          echo "Showing contents of: $d"
-          tree -a -L 15 -I 'tmp|generated|classes|test' "$d"
-        done
-      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
-
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
       run: |
@@ -145,4 +136,13 @@ jobs:
       if: matrix.project != 'quarkus'
       run: |
         ../mvnw spring-boot:build-image -DskipTests
+      working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
+
+    - name: Show current workspace (build|target)
+      run: |
+        echo "Workspace directory structure:"
+        for d in $(find . -type d \( -name build -o -name target \) | sort); do
+          echo "Showing contents of: $d"
+          tree -a -L 15 -I 'tmp|generated|classes|test' "$d"
+        done
       working-directory: ${{ github.workspace }}/maven-parent/${{ matrix.project }}
