@@ -134,6 +134,15 @@ jobs:
         tree -a -L 4
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
 
+    - name: Extract Version from Gradle Project
+      if: matrix.project == 'quarkus'
+      id: extract_version
+      run: |
+        VERSION=$(../gradlew --no-daemon -q properties -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false | grep "^version:" | awk '{ print $2 }')
+        echo "Detected version: $VERSION"
+        echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+      working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
+
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
       run: |
