@@ -12,10 +12,6 @@ version = '1.0.0-SNAPSHOT'
 //noinspection GroovyUnusedAssignment
 archivesBaseName = 'java-sbom-cdx-gradle-quarkus'
 
-quarkus {
-    properties.put("quarkus.cyclonedx.format", "json")
-}
-
 repositories {
     mavenCentral()
     maven {
