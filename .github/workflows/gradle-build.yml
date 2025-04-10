@@ -196,7 +196,7 @@ jobs:
       uses: anchore/sbom-action@v0.18.0
       with:
         path: ./extracted-artifacts/libs
-        artifact-name: sboms/syft/${{ env.IMAGE_NAME }}.syft.cdx.json
+        output-file: sboms/syft/${{ env.IMAGE_NAME }}.syft.cdx.json
         format: cyclonedx-json
         config: .syft/java-config.yaml
         upload-artifact: false
@@ -207,7 +207,7 @@ jobs:
       uses: anchore/sbom-action@v0.18.0
       with:
         path: ./extracted-artifacts/quarkus-app
-        artifact-name: sboms/syft/${{ env.IMAGE_NAME }}.syft.cdx.json
+        output-file: sboms/syft/${{ env.IMAGE_NAME }}.syft.cdx.json
         config: .syft/java-config.yaml
         format: cyclonedx-json
         upload-artifact: false
@@ -218,7 +218,7 @@ jobs:
       uses: anchore/sbom-action@v0.18.0
       with:
         file: ./extracted-artifacts/native/nativeCompile/${{ env.IMAGE_NAME }}
-        artifact-name: sboms/syft/${{ env.IMAGE_NAME }}.syft.cdx.json
+        output-file: sboms/syft/${{ env.IMAGE_NAME }}.syft.cdx.json
         config: .syft/java-config.yaml
         format: cyclonedx-json
         upload-artifact: false
@@ -230,7 +230,7 @@ jobs:
         image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_GROUP }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
         format: cyclonedx-json
         config: .syft/container-config.yaml
-        artifact-name: sboms/syft/${{ env.IMAGE_NAME }}-container.syft.cdx.json
+        output-file: sboms/syft/${{ env.IMAGE_NAME }}-container.syft.cdx.json
         upload-artifact: false
         upload-release-assets: false
         registry-username: ${{ github.actor }}
@@ -241,4 +241,4 @@ jobs:
       with:
         name: ${{ env.UPLOAD_SBOM_ARTIFACTS_NAME }}
         path: sboms/
-        if-no-files-found: ignore
+        if-no-files-found: warn
