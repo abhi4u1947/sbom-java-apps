@@ -24,7 +24,7 @@ jobs:
           - native
 
     env:
-      IMAGE_PUSH: false # Change to true if you want to push images
+      IMAGE_PUSH: true # Change to true if you want to push images
       IMAGE_REGISTRY: ghcr.io
       IMAGE_GROUP: ${{ github.repository_owner }}
       IMAGE_NAME: java-sbom-cdx-maven-${{ matrix.project }}
@@ -38,6 +38,7 @@ jobs:
       BP_JVM_VERSION: 23
       IMAGE_REGISTRY_USERNAME: ${{ github.actor }}
       IMAGE_REGISTRY_PASSWORD: ${{ secrets.GIT_ACTIONS_PAT }}
+      UPLOAD_ARTIFACTS_NAME: maven-${{ matrix.project }}-artifacts
 
     steps:
     - name: Checkout code
@@ -58,7 +59,7 @@ jobs:
       if: matrix.project == 'native'
       with:
         path: ~/.native-image
-        key: graalvm-${{ matrix.project }}-${{ runner.os }}-${{ hashFiles('**/pom.xml', '**/*.gradle*') }}
+        key: graalvm-${{ matrix.project }}-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           graalvm-${{ matrix.project }}-${{ runner.os }}-
 
@@ -67,7 +68,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.cache/buildpacks
-        key: docker-layers-${{ matrix.project }}-${{ runner.os }}-${{ hashFiles('**/pom.xml', '**/*.gradle*') }}
+        key: docker-layers-${{ matrix.project }}-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           docker-layers-${{ matrix.project }}-${{ runner.os }}-
 
@@ -150,7 +151,7 @@ jobs:
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: maven-${{ matrix.project }}-artifacts
+        name: ${{ env.UPLOAD_ARTIFACTS_NAME }}
         path: |
           ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/**/*.jar
           ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/**/*.sbom.json
@@ -160,4 +161,60 @@ jobs:
           ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/**/*-dependency-cyclonedx.json
           ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/quarkus-app/**
           ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/java-sbom-cdx-*-native
+          !${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/classes/
         if-no-files-found: ignore
+
+    - name: Download Uploaded Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ env.UPLOAD_ARTIFACTS_NAME }}
+        path: ./extracted-artifacts
+
+    - name: Show extracted artifact tree
+      run: tree -a -L 4 ./extracted-artifacts
+
+    - name: Create Syft SBOM output directory
+      run: mkdir -p syft
+
+    - name: SBOM for Spring Boot Binaries
+      if: matrix.project == 'normal'
+      uses: anchore/sbom-action@v0.18.0
+      with:
+        path: ./extracted-artifacts
+        artifact-name: ${{ env.IMAGE_NAME }}.syft.cdx.json
+        format: cyclonedx-json
+        exclude: "**/*.original,**/*.sbom.json,**/*.cdx.json,**/*dependency-cyclonedx.json"
+        upload-artifact: true
+        upload-release-assets: false
+
+    - name: SBOM for Quarkus App Binaries
+      if: matrix.project == 'quarkus'
+      uses: anchore/sbom-action@v0.18.0
+      with:
+        path: ./extracted-artifacts/quarkus-app
+        artifact-name: ${{ env.IMAGE_NAME }}.syft.cdx.json
+        format: cyclonedx-json
+        exclude: "**/*.sbom.json,**/*.cdx.json,**/*dependency-cyclonedx.json"
+        upload-artifact: true
+        upload-release-assets: false
+
+    - name: SBOM for GraalVM Native Binaries
+      if: matrix.project == 'native'
+      uses: anchore/sbom-action@v0.18.0
+      with:
+        file: ./extracted-artifacts/${{ env.IMAGE_NAME }}
+        artifact-name: ${{ env.IMAGE_NAME }}.syft.cdx.json
+        format: cyclonedx-json
+        upload-artifact: true
+        upload-release-assets: false
+
+    - name: SBOM for Container Image
+      uses: anchore/sbom-action@v0.18.0
+      with:
+        image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_GROUP }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+        format: cyclonedx-json
+        artifact-name: ${{ env.IMAGE_NAME }}-container.syft.cdx.json
+        upload-artifact: true
+        upload-release-assets: false
+        registry-username: ${{ github.actor }}
+        registry-password: ${{ secrets.GIT_ACTIONS_PAT }}
