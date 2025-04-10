@@ -39,6 +39,7 @@ jobs:
       IMAGE_REGISTRY_USERNAME: ${{ github.actor }}
       IMAGE_REGISTRY_PASSWORD: ${{ secrets.GIT_ACTIONS_PAT }}
       UPLOAD_ARTIFACTS_NAME: maven-${{ matrix.project }}-artifacts
+      UPLOAD_SBOM_ARTIFACTS_NAME: maven-${{ matrix.project }}-sboms
 
     steps:
     - name: Checkout code
@@ -173,48 +174,57 @@ jobs:
     - name: Show extracted artifact tree
       run: tree -a -L 4 ./extracted-artifacts
 
-    - name: Create Syft SBOM output directory
-      run: mkdir -p syft
+    - name: SBOM (syft) create output directory
+      run: mkdir -p sboms/syft/
 
-    - name: SBOM for Spring Boot Binaries
+    - name: SBOM (syft) for Spring Boot Binaries
       if: matrix.project == 'normal'
       uses: anchore/sbom-action@v0.18.0
       with:
         path: ./extracted-artifacts
-        artifact-name: ${{ env.IMAGE_NAME }}.syft.cdx.json
+        artifact-name: sboms/syft/${{ env.IMAGE_NAME }}.syft.cdx.json
         format: cyclonedx-json
-        exclude: "**/*.original,**/*.sbom.json,**/*.cdx.json,**/*dependency-cyclonedx.json"
-        upload-artifact: true
+        config: .syft/java-config.yaml
+        upload-artifact: false
         upload-release-assets: false
 
-    - name: SBOM for Quarkus App Binaries
+    - name: SBOM (syft) for Quarkus App Binaries
       if: matrix.project == 'quarkus'
       uses: anchore/sbom-action@v0.18.0
       with:
         path: ./extracted-artifacts/quarkus-app
-        artifact-name: ${{ env.IMAGE_NAME }}.syft.cdx.json
+        artifact-name: sboms/syft/${{ env.IMAGE_NAME }}.syft.cdx.json
         format: cyclonedx-json
-        exclude: "**/*.sbom.json,**/*.cdx.json,**/*dependency-cyclonedx.json"
-        upload-artifact: true
+        config: .syft/java-config.yaml
+        upload-artifact: false
         upload-release-assets: false
 
-    - name: SBOM for GraalVM Native Binaries
+    - name: SBOM (syft) for GraalVM Native Binaries
       if: matrix.project == 'native'
       uses: anchore/sbom-action@v0.18.0
       with:
         file: ./extracted-artifacts/${{ env.IMAGE_NAME }}
-        artifact-name: ${{ env.IMAGE_NAME }}.syft.cdx.json
+        artifact-name: sboms/syft/${{ env.IMAGE_NAME }}.syft.cdx.json
         format: cyclonedx-json
-        upload-artifact: true
+        config: .syft/java-config.yaml
+        upload-artifact: false
         upload-release-assets: false
 
-    - name: SBOM for Container Image
+    - name: SBOM (syft) for Container Image
       uses: anchore/sbom-action@v0.18.0
       with:
         image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_GROUP }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
         format: cyclonedx-json
-        artifact-name: ${{ env.IMAGE_NAME }}-container.syft.cdx.json
-        upload-artifact: true
+        config: .syft/container-config.yaml
+        artifact-name: sboms/syft/${{ env.IMAGE_NAME }}-container.syft.cdx.json
+        upload-artifact: false
         upload-release-assets: false
         registry-username: ${{ github.actor }}
         registry-password: ${{ secrets.GIT_ACTIONS_PAT }}
+
+    - name: Upload Combined SBOMs (ALL)
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.UPLOAD_SBOM_ARTIFACTS_NAME }}
+        path: sboms/
+        if-no-files-found: ignore
