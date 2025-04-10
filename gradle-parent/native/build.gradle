@@ -35,7 +35,8 @@ tasks.test {
 graalvmNative {
     binaries {
         configureEach {
-            buildArgs.add("--enable-sbom=cyclonedx,export")
+            buildArgs.add("--enable-sbom=classpath,export")
+            imageName = "java-sbom-cdx-gradle-native"
         }
     }
 }
@@ -85,6 +86,6 @@ tasks.named('cyclonedxBom') {
     includeLicenseText = false
 
     destination = file("build/reports")
-    outputName = "sbom.cdx"
+    outputName = "application.cdx"
     outputFormat = "json"
 }

@@ -9,7 +9,7 @@ group = 'com.nc'
 version = '1.0-SNAPSHOT'
 
 //noinspection GroovyUnusedAssignment
-archivesBaseName = 'java-sbom-cdx-gradle' // This sets the artifactId
+archivesBaseName = 'java-sbom-cdx-gradle-normal' // This sets the artifactId
 
 java {
     toolchain {
@@ -76,6 +76,6 @@ tasks.named('cyclonedxBom') {
     includeLicenseText = false
 
     destination = file("build/reports")
-    outputName = "sbom.cdx"
+    outputName = "application.cdx"
     outputFormat = "json"
 }

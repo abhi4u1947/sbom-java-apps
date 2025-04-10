@@ -53,7 +53,14 @@
                         <goals>
                             <goal>build</goal>
                             <goal>native-image-agent</goal>
+                            <goal>dependency-sbom</goal>
                         </goals>
+                        <configuration>
+                            <attachSboms>true</attachSboms>
+                            <outputFile>target/application.cdx.json</outputFile>
+                            <format>json</format>
+                            <schemaVersion>1.6</schemaVersion>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -63,7 +70,7 @@
                 <version>2.9.1</version>
                 <configuration>
                     <projectType>application</projectType>
-                    <outputName>sbom.cdx</outputName>
+                    <outputName>application.cdx</outputName>
                     <outputFormat>json</outputFormat>
                     <schemaVersion>1.6</schemaVersion>
                 </configuration>

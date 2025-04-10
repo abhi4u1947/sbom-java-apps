@@ -107,16 +107,16 @@ jobs:
 
     - name: Build JAR with Gradle
       if: matrix.project != 'native'
-      run: ../gradlew --no-daemon build
+      run: ../gradlew --no-daemon :java-sbom-cdx-gradle-${{ matrix.project }}:build
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
 
     - name: Build Native Executable (only for native project)
       if: matrix.project == 'native'
-      run: ../gradlew --no-daemon nativeCompile
+      run: ../gradlew --no-daemon :java-sbom-cdx-gradle-${{ matrix.project }}:nativeCompile
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
 
     - name: Generate SBOM
-      run: ../gradlew --no-daemon cyclonedxBom
+      run: ../gradlew --no-daemon :java-sbom-cdx-gradle-${{ matrix.project }}:cyclonedxBom
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
 
     - name: Extract Version from Gradle Project
@@ -131,7 +131,7 @@ jobs:
     - name: Build Container Image for Quarkus
       if: matrix.project == 'quarkus'
       run: |
-        ../gradlew --no-daemon imageBuild \
+        ../gradlew --no-daemon :java-sbom-cdx-gradle-${{ matrix.project }}:imageBuild \
           -DskipTests \
           --info \
           --stacktrace \
@@ -148,7 +148,7 @@ jobs:
     - name: Build Container Image for Spring Boot (Gradle)
       if: matrix.project != 'quarkus'
       run: |
-        ../gradlew --no-daemon bootBuildImage -DskipTests --info --stacktrace
+        ../gradlew --no-daemon :java-sbom-cdx-gradle-${{ matrix.project }}:bootBuildImage -DskipTests --info --stacktrace
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
 
     - name: Show current workspace (build|target)
@@ -156,7 +156,7 @@ jobs:
         echo "Workspace directory structure:"
         for d in $(find . -type d \( -name build -o -name target \) | sort); do
           echo "Showing contents of: $d"
-          tree -a -L 15 -I 'tmp|generated|classes|test|test-*|maven-status|generated-*|spring-aot|graalvm-reachability-metadata' "$d"
+          tree -a -L 15 -I 'tmp|resources|generated|classes|test|test-*|maven-status|generated-*|spring-aot|graalvm-reachability-metadata' "$d"
         done
       working-directory: ${{ github.workspace }}/gradle-parent/${{ matrix.project }}
 
@@ -167,7 +167,7 @@ jobs:
         path: |
           ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/libs/**/*.jar
           ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/**/*.sbom.json
-          ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/**/sbom.cdx.json
+          ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/**/application.cdx.json
           ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/native/**
           ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/quarkus-app/**
         if-no-files-found: ignore

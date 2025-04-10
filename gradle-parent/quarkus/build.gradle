@@ -61,6 +61,6 @@ tasks.named('cyclonedxBom') {
     includeLicenseText = false
 
     destination = file("build/reports")
-    outputName = "sbom.cdx"
+    outputName = "application.cdx"
     outputFormat = "json"
 }

@@ -23,7 +23,7 @@ The plugin is configured in the `pom.xml` file as follows:
     <configuration>
         <projectType>application</projectType>
         <outputFormat>json</outputFormat>
-        <outputName>sbom.cdx</outputName>
+        <outputName>application.cdx</outputName>
         <schemaVersion>1.6</schemaVersion>
     </configuration>
 </plugin>
@@ -35,7 +35,7 @@ Run the following Maven command to generate the SBOM:
 mvn cyclonedx:makeAggregateBom
 ```
 
-The SBOM will be generated in the `target` directory with the name `sbom.cdx.json`.
+The SBOM will be generated in the `target` directory with the name `application.cdx.json`.
 
 ##### **Adding More Information to the SBOM**
 To include additional metadata in the SBOM, you can configure the plugin with properties such as `organizationName`, `componentVersion`, or custom properties. Refer to the [CycloneDX Maven Plugin documentation](https://github.com/CycloneDX/cyclonedx-maven-plugin#configuration) for more details.
@@ -56,7 +56,7 @@ plugins {
 
 cyclonedxBom {
     outputFormat = 'json'
-    outputName = 'sbom.cdx'
+    outputName = 'application.cdx'
     schemaVersion = '1.6'
 }
 ```
@@ -67,7 +67,7 @@ Run the following Gradle command to generate the SBOM:
 ./gradlew cyclonedxBom
 ```
 
-The SBOM will be generated in the `build/reports` directory with the name `sbom.cdx.json`.
+The SBOM will be generated in the `build/reports` directory with the name `application.cdx.json`.
 
 ##### **Adding More Information to the SBOM**
 You can customize the SBOM by configuring additional properties such as `includeBomSerialNumber`, `includeLicenseText`, or `customProperties`. Refer to the [CycloneDX Gradle Plugin documentation](https://github.com/CycloneDX/cyclonedx-gradle-plugin#configuration) for more details.
@@ -75,3 +75,8 @@ You can customize the SBOM by configuring additional properties such as `include
 ---
 
 By using these plugins, you can easily generate SBOMs for your Java applications and configure them to include detailed metadata about your project.
+
+References: 
+
+[Software Bill of Materials (SBOM) in GraalVM Native Image](https://www.graalvm.org/latest/security-guide/native-image/sbom/).
+[More Accurate SBOMs with Maven in GraalVM Native Image](https://www.graalvm.org/latest/security-guide/native-image/sbom/#more-accurate-sboms-with-maven)
