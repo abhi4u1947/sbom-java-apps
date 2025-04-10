@@ -155,6 +155,9 @@ jobs:
           ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/**/*.jar
           ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/**/*.sbom.json
           ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/**/application.cdx.json
+          ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/application.cdx.json
+          ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/*-dependency-cyclonedx.json
+          ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/**/*-dependency-cyclonedx.json
           ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/quarkus-app/**
           ${{ github.workspace }}/maven-parent/${{ matrix.project }}/target/java-sbom-cdx-*-native
         if-no-files-found: ignore

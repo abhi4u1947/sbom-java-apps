@@ -9,6 +9,7 @@
     <properties>
         <java.version>23</java.version>
         <quarkus.platform.version>3.21.0</quarkus.platform.version>
+        <quarkus.cyclonedx.format>json</quarkus.cyclonedx.format>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -25,6 +26,10 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cyclonedx</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -52,12 +57,11 @@
                     <execution>
                         <goals>
                             <goal>build</goal>
-                            <goal>native-image-agent</goal>
                             <goal>dependency-sbom</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <attachSboms>true</attachSboms>
-                            <outputFile>target/application.cdx.json</outputFile>
                             <format>json</format>
                             <schemaVersion>1.6</schemaVersion>
                         </configuration>

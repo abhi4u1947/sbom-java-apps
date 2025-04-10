@@ -12,6 +12,10 @@ version = '1.0.0-SNAPSHOT'
 //noinspection GroovyUnusedAssignment
 archivesBaseName = 'java-sbom-cdx-gradle-quarkus'
 
+quarkus {
+    properties.put("quarkus.cyclonedx.format", "json")
+}
+
 repositories {
     mavenCentral()
     maven {
@@ -23,6 +27,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-container-image-docker'
     implementation enforcedPlatform('io.quarkus:quarkus-bom:3.21.0')
     implementation 'io.quarkus:quarkus-resteasy'
+    implementation 'io.quarkus:quarkus-cyclonedx'
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
 }

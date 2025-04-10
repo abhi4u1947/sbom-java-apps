@@ -168,6 +168,8 @@ jobs:
           ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/libs/**/*.jar
           ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/**/*.sbom.json
           ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/**/application.cdx.json
+          ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/*-dependency-cyclonedx.json
+          ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/**/*-dependency-cyclonedx.json
           ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/native/**
           ${{ github.workspace }}/gradle-parent/${{ matrix.project }}/build/quarkus-app/**
         if-no-files-found: ignore
