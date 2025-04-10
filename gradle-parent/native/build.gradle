@@ -3,7 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.4.2'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.graalvm.buildtools.native' version '0.10.4'
-    id 'org.cyclonedx.bom' version '2.0.0'
+    id 'org.cyclonedx.bom' version '2.2.0'
 }
 
 group = 'com.nc'
@@ -35,32 +35,9 @@ tasks.test {
 graalvmNative {
     binaries {
         configureEach {
-            buildArgs.add("--enable-sbom=cyclonedx,export")
+            buildArgs.add("--enable-sbom=classpath,export")
+            imageName = "java-sbom-cdx-gradle-native"
         }
-    }
-}
-
-def envVars = [
-        IMAGE_REGISTRY: System.getenv('IMAGE_REGISTRY') ?: 'ghcr.io',
-        IMAGE_NAME    : System.getenv('IMAGE_NAME') ?: 'default',
-        IMAGE_GROUP   : System.getenv('IMAGE_GROUP') ?: 'default',
-        IMAGE_TAG     : System.getenv('IMAGE_TAG') ?: 'latest',
-        IMAGE_AUTHOR  : System.getenv('IMAGE_AUTHOR') ?: 'unknown',
-        IMAGE_LICENSE : System.getenv('IMAGE_LICENSE') ?: 'Apache-2.0',
-        IMAGE_SOURCE  : System.getenv('IMAGE_SOURCE') ?: 'unknown'
-]
-
-// Add selected project properties (like version, group, etc.)
-def projectProps = [
-        appVersion: project.version,
-]
-
-// Merge both maps
-def allProps = envVars + projectProps
-
-processResources {
-    filesMatching("**/application.properties") {
-        expand(allProps)
     }
 }
 
@@ -98,5 +75,17 @@ tasks.named('bootBuildImage') {
 
 tasks.named('cyclonedxBom') {
     schemaVersion = "1.6"
-    includeConfigs = ["runtimeClasspath"]
+    includeConfigs = ["runtimeClasspath", "compileClasspath"]
+
+    // Optional: Avoid including the root or test-only subprojects
+    skipProjects = [rootProject.name]
+
+    projectType = "application"
+
+    includeBomSerialNumber = true
+    includeLicenseText = false
+
+    destination = file("build/reports")
+    outputName = "application.cdx"
+    outputFormat = "json"
 }

@@ -7,14 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="java-sbom-cdx-maven-native" />
-        <module name="java-sbom-cdx-maven" />
+        <module name="java-sbom-cdx-maven-normal" />
         <module name="java-sbom-cdx-maven-quarkus" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="gradle-parent.java-sbom-cdx-gradle-normal" target="23" />
-      <module name="gradle-parent.java-sbom-cdx-gradle-normal.main" target="23" />
-      <module name="gradle-parent.java-sbom-cdx-gradle-normal.test" target="23" />
+      <module name="gradle-parent.main" target="23" />
       <module name="gradle-parent.native" target="23" />
       <module name="gradle-parent.native.aot" target="23" />
       <module name="gradle-parent.native.aotTest" target="23" />
@@ -23,12 +21,17 @@
       <module name="gradle-parent.normal" target="23" />
       <module name="gradle-parent.normal.main" target="23" />
       <module name="gradle-parent.normal.test" target="23" />
+      <module name="gradle-parent.quarkus" target="23" />
+      <module name="gradle-parent.quarkus.main" target="23" />
+      <module name="gradle-parent.quarkus.test" target="23" />
+      <module name="gradle-parent.test" target="23" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="java-sbom-cdx-maven" options="-parameters" />
       <module name="java-sbom-cdx-maven-native" options="-parameters" />
+      <module name="java-sbom-cdx-maven-normal" options="-parameters" />
     </option>
   </component>
 </project>

@@ -9,6 +9,7 @@
     <properties>
         <java.version>23</java.version>
         <quarkus.platform.version>3.21.0</quarkus.platform.version>
+        <quarkus.cyclonedx.format>json</quarkus.cyclonedx.format>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -25,6 +26,10 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cyclonedx</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -52,8 +57,14 @@
                     <execution>
                         <goals>
                             <goal>build</goal>
-                            <goal>native-image-agent</goal>
+                            <goal>dependency-sbom</goal>
                         </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <attachSboms>true</attachSboms>
+                            <format>json</format>
+                            <schemaVersion>1.6</schemaVersion>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -63,10 +74,22 @@
                 <version>2.9.1</version>
                 <configuration>
                     <projectType>application</projectType>
+                    <outputName>application.cdx</outputName>
                     <outputFormat>json</outputFormat>
                     <schemaVersion>1.6</schemaVersion>
                 </configuration>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/application.properties</include>
+                    <include>**/application.yml</include>
+                    <include>**/application.yaml</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 </project>

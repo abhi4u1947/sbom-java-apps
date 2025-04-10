@@ -10,7 +10,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.nc</groupId>
-    <artifactId>java-sbom-cdx-maven</artifactId>
+    <artifactId>java-sbom-cdx-maven-normal</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>maven</name>
     <description>maven</description>
@@ -66,8 +66,10 @@
             <plugin>
                 <groupId>org.cyclonedx</groupId>
                 <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>2.9.1</version>
                 <configuration>
                     <projectType>application</projectType>
+                    <outputName>application.cdx</outputName>
                     <outputFormat>json</outputFormat>
                     <schemaVersion>1.6</schemaVersion>
                 </configuration>
