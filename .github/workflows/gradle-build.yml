@@ -278,7 +278,7 @@ jobs:
       run: .github/scripts/generate-cdxgen-sbom.sh
       env:
         CONF_PROJECT_DIR: ./extracted-artifacts/libs
-        CONF_ECOSYSTEMS: java
+        CONF_ECOSYSTEMS: java gradle jar
         CONF_RESULT_PATH: sboms/cdxgen/${{ env.IMAGE_NAME }}.cdxgen.cdx.json
 
     - name: SBOM (cdxgen) for Quarkus
@@ -286,7 +286,7 @@ jobs:
       run: .github/scripts/generate-cdxgen-sbom.sh
       env:
         CONF_PROJECT_DIR: ./extracted-artifacts/quarkus-app
-        CONF_ECOSYSTEMS: java
+        CONF_ECOSYSTEMS: java gradle quarkus jar
         CONF_RESULT_PATH: sboms/cdxgen/${{ env.IMAGE_NAME }}.cdxgen.cdx.json
 
     - name: SBOM (cdxgen) for GraalVM Native
@@ -294,7 +294,7 @@ jobs:
       run: .github/scripts/generate-cdxgen-sbom.sh
       env:
         CONF_PROJECT_DIR: ./extracted-artifacts/native/nativeCompile
-        CONF_ECOSYSTEMS: java
+        CONF_ECOSYSTEMS: java gradle binary blint
         CONF_RESULT_PATH: sboms/cdxgen/${{ env.IMAGE_NAME }}.cdxgen.cdx.json
 
     - name: SBOM (cdxgen) for Container Image
@@ -302,7 +302,7 @@ jobs:
       run: .github/scripts/generate-cdxgen-sbom.sh
       env:
         CONF_PROJECT_DIR: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_GROUP }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-        CONF_ECOSYSTEMS: docker
+        CONF_ECOSYSTEMS: docker jar
         CONF_RESULT_PATH: sboms/cdxgen/${{ env.IMAGE_NAME }}-container.cdxgen.cdx.json
 
     - name: Upload Combined SBOMs (ALL)
