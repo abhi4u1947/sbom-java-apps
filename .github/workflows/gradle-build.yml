@@ -29,6 +29,7 @@ jobs:
       IMAGE_GROUP: ${{ github.repository_owner }}
       IMAGE_NAME: java-sbom-cdx-gradle-${{ matrix.project }}
       IMAGE_TAG: ${{ github.sha }}
+
       # OCI Metadata
       IMAGE_AUTHOR: ${{ github.actor }}
       IMAGE_SOURCE: https://github.com/${{ github.repository }}
@@ -38,8 +39,15 @@ jobs:
       BP_JVM_VERSION: 23
       IMAGE_REGISTRY_USERNAME: ${{ github.actor }}
       IMAGE_REGISTRY_PASSWORD: ${{ secrets.GIT_ACTIONS_PAT }}
+
       UPLOAD_ARTIFACTS_NAME: gradle-${{ matrix.project }}-artifacts
       UPLOAD_SBOM_ARTIFACTS_NAME: gradle-${{ matrix.project }}-sboms
+      SKIP_SYFT: true  # Set to false to re-enable Syft
+      SKIP_CDXGEN: false  # Set to false to re-enable Cdxgen
+
+      # CDXGen Config
+      FETCH_LICENSE: true
+      CDXGEN_DEBUG_MODE: verbose
 
     steps:
     - name: Checkout code
@@ -102,6 +110,25 @@ jobs:
         java-version: 23
         distribution: 'graalvm'
         github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Node.js (latest LTS)
+      uses: actions/setup-node@v4
+      with:
+        node-version: 'lts/*'
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'  # Or latest stable
+
+    - name: Verify Node and npm version
+      run: |
+        node -v
+        npm -v
+
+    - name: Install cdxgen CLI
+      if: env.SKIP_CDXGEN != 'true'
+      run: npm install -g @cyclonedx/cdxgen
 
     - name: Grant execute permission for gradlew
       run: chmod +x ${{ github.workspace }}/gradle-parent/gradlew
@@ -189,10 +216,11 @@ jobs:
       run: tree -a -L 4 ./extracted-artifacts
 
     - name: SBOM (syft) create output directory
+      if: env.SKIP_SYFT != 'true'
       run: mkdir -p sboms/syft/
 
     - name: SBOM (syft) for Spring Boot JAR
-      if: matrix.project == 'normal'
+      if: matrix.project == 'normal' && env.SKIP_SYFT != 'true'
       uses: anchore/sbom-action@v0.18.0
       with:
         path: ./extracted-artifacts/libs
@@ -203,7 +231,7 @@ jobs:
         upload-release-assets: false
 
     - name: SBOM (syft) for Quarkus App Binaries
-      if: matrix.project == 'quarkus'
+      if: matrix.project == 'quarkus' && env.SKIP_SYFT != 'true'
       uses: anchore/sbom-action@v0.18.0
       with:
         path: ./extracted-artifacts/quarkus-app
@@ -214,7 +242,7 @@ jobs:
         upload-release-assets: false
 
     - name: SBOM (syft) for GraalVM Native Binary
-      if: matrix.project == 'native'
+      if: matrix.project == 'native' && env.SKIP_SYFT != 'true'
       uses: anchore/sbom-action@v0.18.0
       with:
         file: ./extracted-artifacts/native/nativeCompile/${{ env.IMAGE_NAME }}
@@ -225,6 +253,7 @@ jobs:
         upload-release-assets: false
 
     - name: SBOM (syft) for Container Image
+      if: env.SKIP_SYFT != 'true'
       uses: anchore/sbom-action@v0.18.0
       with:
         image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_GROUP }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
@@ -235,6 +264,46 @@ jobs:
         upload-release-assets: false
         registry-username: ${{ github.actor }}
         registry-password: ${{ secrets.GIT_ACTIONS_PAT }}
+
+    - name: SBOM (cdxgen) Make CDXGen script executable
+      if: env.SKIP_CDXGEN != 'true'
+      run: chmod +x .github/scripts/generate-cdxgen-sbom.sh
+
+    - name: SBOM (cdxgen) create output directory
+      if: env.SKIP_CDXGEN != 'true'
+      run: mkdir -p sboms/cdxgen/
+
+    - name: SBOM (cdxgen) for Spring Boot
+      if: matrix.project == 'normal' && env.SKIP_CDXGEN != 'true'
+      run: .github/scripts/generate-cdxgen-sbom.sh
+      env:
+        CONF_PROJECT_DIR: ./extracted-artifacts/libs
+        CONF_ECOSYSTEMS: java
+        CONF_RESULT_PATH: sboms/cdxgen/${{ env.IMAGE_NAME }}.cdxgen.cdx.json
+
+    - name: SBOM (cdxgen) for Quarkus
+      if: matrix.project == 'quarkus' && env.SKIP_CDXGEN != 'true'
+      run: .github/scripts/generate-cdxgen-sbom.sh
+      env:
+        CONF_PROJECT_DIR: ./extracted-artifacts/quarkus-app
+        CONF_ECOSYSTEMS: java
+        CONF_RESULT_PATH: sboms/cdxgen/${{ env.IMAGE_NAME }}.cdxgen.cdx.json
+
+    - name: SBOM (cdxgen) for GraalVM Native
+      if: matrix.project == 'native' && env.SKIP_CDXGEN != 'true'
+      run: .github/scripts/generate-cdxgen-sbom.sh
+      env:
+        CONF_PROJECT_DIR: ./extracted-artifacts/native/nativeCompile
+        CONF_ECOSYSTEMS: java
+        CONF_RESULT_PATH: sboms/cdxgen/${{ env.IMAGE_NAME }}.cdxgen.cdx.json
+
+    - name: SBOM (cdxgen) for Container Image
+      if: env.SKIP_CDXGEN != 'true'
+      run: .github/scripts/generate-cdxgen-sbom.sh
+      env:
+        CONF_PROJECT_DIR: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_GROUP }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+        CONF_ECOSYSTEMS: docker
+        CONF_RESULT_PATH: sboms/cdxgen/${{ env.IMAGE_NAME }}-container.cdxgen.cdx.json
 
     - name: Upload Combined SBOMs (ALL)
       uses: actions/upload-artifact@v4
