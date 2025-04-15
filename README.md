@@ -1,19 +1,31 @@
-# sbom-java-apps
-CycloneDX SBOM for Java Applications
+# Generating Software Bill of Materials (SBOM) for Java Applications
 
-### Generating SBOM for Java Applications
+## Table of Contents
+- [Overview](#overview)
+- [Maven-Based Projects](#maven-based-projects)
+  - [Configuration](#maven-configuration)
+  - [Key Configuration Options](#maven-key-configuration-options)
+  - [Generating the SBOM](#maven-generating-the-sbom)
+- [Gradle-Based Projects](#gradle-based-projects)
+  - [Configuration](#gradle-configuration)
+  - [Key Configuration Options](#gradle-key-configuration-options)
+  - [Generating the SBOM](#gradle-generating-the-sbom)
+- [Advanced Configuration](#advanced-configuration)
+  - [Adding Metadata](#adding-metadata)
+  - [Adding License Information](#adding-license-information)
+  - [Version Compatibility](#version-compatibility)
+- [CI/CD Integration](#cicd-integration)
+- [References](#references)
 
-This project demonstrates how to generate a Software Bill of Materials (SBOM) for Java applications using CycloneDX plugins for both Maven and Gradle. 
-Below are the details on how these plugins are used and how they can be configured to include additional information in the SBOM.
+## Overview
 
----
+This guide explains how to generate Software Bill of Materials (SBOM) for Java applications using CycloneDX plugins for both Maven and Gradle build systems. An SBOM provides a detailed inventory of all components, libraries, and dependencies used in your software project, which is essential for security and compliance.
 
-#### **Maven-Based Projects**
+## Maven-Based Projects
 
-For Maven-based projects, the [CycloneDX Maven Plugin](https://github.com/CycloneDX/cyclonedx-maven-plugin) is used to generate the SBOM.
+### Maven Configuration
 
-##### **Configuration**
-The plugin is configured in the `pom.xml` file as follows:
+Add the CycloneDX Maven plugin to your `pom.xml`:
 
 ```xml
 <plugin>
@@ -29,54 +41,162 @@ The plugin is configured in the `pom.xml` file as follows:
 </plugin>
 ```
 
-##### **How to Generate the SBOM**
-Run the following Maven command to generate the SBOM:
+### Maven Key Configuration Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `projectType` | Specifies the type of project (`application` or `library`) | `application` |
+| `outputFormat` | Format of the SBOM (`json` or `xml`) | `json` |
+| `outputName` | Name of the output SBOM file | `application.cdx` |
+| `schemaVersion` | CycloneDX schema version | `1.6` |
+
+### Maven Generating the SBOM
+
+To generate the SBOM, run:
+
 ```bash
 mvn cyclonedx:makeAggregateBom
 ```
 
-The SBOM will be generated in the `target` directory with the name `application.cdx.json`.
+The SBOM will be generated in the `target` directory with the specified output name.
 
-##### **Adding More Information to the SBOM**
-To include additional metadata in the SBOM, you can configure the plugin with properties such as `organizationName`, `componentVersion`, or custom properties. Refer to the [CycloneDX Maven Plugin documentation](https://github.com/CycloneDX/cyclonedx-maven-plugin#configuration) for more details.
+## Gradle-Based Projects
 
----
+### Gradle Configuration
 
-#### **Gradle-Based Projects**
-
-For Gradle-based projects, the [CycloneDX Gradle Plugin](https://github.com/CycloneDX/cyclonedx-gradle-plugin) is used to generate the SBOM.
-
-##### **Configuration**
-The plugin is applied in the `build.gradle` file as follows:
+Add the CycloneDX Gradle plugin to your `build.gradle` or `build.gradle.kts`:
 
 ```groovy
 plugins {
-    id 'org.cyclonedx.bom' version '1.7.4'
+    id 'org.cyclonedx.bom' version '2.2.0'
 }
 
-cyclonedxBom {
-    outputFormat = 'json'
-    outputName = 'application.cdx'
-    schemaVersion = '1.6'
+tasks.named('cyclonedxBom') {
+    schemaVersion = "1.6"
+    includeConfigs = ["runtimeClasspath", "compileClasspath"]
+    skipProjects = [rootProject.name]
+    projectType = "application"
+    includeBomSerialNumber = true
+    includeLicenseText = false
+    destination = file("build/reports")
+    outputName = "application.cdx"
+    outputFormat = "json"
 }
 ```
 
-##### **How to Generate the SBOM**
-Run the following Gradle command to generate the SBOM:
+### Gradle Key Configuration Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `schemaVersion` | CycloneDX schema version | `1.6` |
+| `includeConfigs` | List of configurations to include | `["runtimeClasspath"]` |
+| `skipProjects` | Projects to exclude | `[]` |
+| `projectType` | Type of project | `application` |
+| `includeBomSerialNumber` | Include unique identifier | `true` |
+| `includeLicenseText` | Include full license text | `false` |
+| `destination` | Output directory | `build/reports` |
+| `outputName` | Output file name | `application.cdx` |
+| `outputFormat` | Output format | `json` |
+
+### Gradle Generating the SBOM
+
+To generate the SBOM, run:
+
 ```bash
 ./gradlew cyclonedxBom
 ```
 
-The SBOM will be generated in the `build/reports` directory with the name `application.cdx.json`.
+The SBOM will be generated in the specified destination directory (default: `build/reports`).
 
-##### **Adding More Information to the SBOM**
-You can customize the SBOM by configuring additional properties such as `includeBomSerialNumber`, `includeLicenseText`, or `customProperties`. Refer to the [CycloneDX Gradle Plugin documentation](https://github.com/CycloneDX/cyclonedx-gradle-plugin#configuration) for more details.
+## Advanced Configuration
 
----
+### Adding Metadata
 
-By using these plugins, you can easily generate SBOMs for your Java applications and configure them to include detailed metadata about your project.
+Both plugins support adding additional metadata to the SBOM:
 
-References: 
+#### Maven Metadata Configuration
+```xml
+<configuration>
+    <organizationalEntity>
+        <name>Your Organization</name>
+        <url>https://your-org.com</url>
+        <contact>
+            <name>Contact Name</name>
+            <email>contact@your-org.com</email>
+        </contact>
+    </organizationalEntity>
+</configuration>
+```
 
-[Software Bill of Materials (SBOM) in GraalVM Native Image](https://www.graalvm.org/latest/security-guide/native-image/sbom/).
-[More Accurate SBOMs with Maven in GraalVM Native Image](https://www.graalvm.org/latest/security-guide/native-image/sbom/#more-accurate-sboms-with-maven)
+#### Gradle Metadata Configuration
+```groovy
+cyclonedxBom {
+    organizationalEntity { oe ->
+        oe.name = 'Your Organization'
+        oe.url = ['https://your-org.com']
+        oe.addContact(organizationalContact)
+    }
+}
+```
+
+### Adding License Information
+
+You can specify license information for your project:
+
+#### Maven License Configuration
+```xml
+<configuration>
+    <licenseChoice>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenseChoice>
+</configuration>
+```
+
+#### Gradle License Configuration
+```groovy
+cyclonedxBom {
+    licenseChoice { lc ->
+        def license = new License()
+        license.setName("Apache License 2.0")
+        license.setUrl("https://www.apache.org/licenses/LICENSE-2.0")
+        lc.addLicense(license)
+    }
+}
+```
+
+### Version Compatibility
+
+The following table shows the compatibility between plugin versions and CycloneDX schema versions:
+
+| Plugin Version | Schema Version | Supported Formats |
+|---------------|----------------|------------------|
+| 2.x.x         | 1.6           | XML, JSON        |
+| 1.10.x        | 1.6           | XML, JSON        |
+| 1.9.x         | 1.6           | XML, JSON        |
+| 1.8.x         | 1.5           | XML, JSON        |
+| 1.7.x         | 1.4           | XML, JSON        |
+
+## CI/CD Integration
+
+Both plugins can be easily integrated into CI/CD pipelines. For example, in GitHub Actions:
+
+```yaml
+- name: Generate SBOM (Maven)
+  run: mvn cyclonedx:makeAggregateBom
+
+- name: Generate SBOM (Gradle)
+  run: ./gradlew cyclonedxBom
+```
+
+The generated SBOMs can be found in:
+- Maven: `target/application.cdx.json`
+- Gradle: `build/reports/application.cdx.json`
+
+## References
+
+- [CycloneDX Gradle Plugin Documentation](https://github.com/CycloneDX/cyclonedx-gradle-plugin)
+- [CycloneDX Maven Plugin Documentation](https://github.com/CycloneDX/cyclonedx-maven-plugin)
+- [CycloneDX Specification](https://cyclonedx.org/specification/)

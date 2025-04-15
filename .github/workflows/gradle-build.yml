@@ -42,7 +42,7 @@ jobs:
 
       UPLOAD_ARTIFACTS_NAME: gradle-${{ matrix.project }}-artifacts
       UPLOAD_SBOM_ARTIFACTS_NAME: gradle-${{ matrix.project }}-sboms
-      SKIP_SYFT: true  # Set to false to re-enable Syft
+      SKIP_SYFT: false  # Set to false to re-enable Syft
       SKIP_CDXGEN: false  # Set to false to re-enable Cdxgen
 
       # CDXGen Config
