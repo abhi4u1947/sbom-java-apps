@@ -3,3 +3,9 @@ management:
     web:
       exposure:
         include: sbom
+
+  endpoint:
+    sbom:
+      additional:
+        native-image:
+          location: "optional:classpath:META-INF/sbom/application.cdx.json"
